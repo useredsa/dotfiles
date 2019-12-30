@@ -1,1 +1,0 @@
-/home/emilio_dominguez/.vim
