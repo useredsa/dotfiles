@@ -66,6 +66,8 @@ Plug 'sirver/ultisnips'
     let g:UltiSnipsExpandTrigger = '<tab>'
     let g:UltiSnipsJumpForwardTrigger = '<tab>'
     let g:UltiSnipsJumpBackwardTrigger = '<s-tab>'
+"Plug 'Valloric/YouCompleteMe', { 'do': 'python3 install.py --clangd-completer'}
+"    let g:ycm_auto_trigger=1
 
 " Latex Plugins
 Plug 'lervag/vimtex'
@@ -172,10 +174,10 @@ set foldcolumn=1
 syntax enable 
 
 " Enable 256 colors palette in Gnome Terminal
-if $COLORTERM == 'gnome-terminal'
+"if $COLORTERM == 'gnome-terminal'
     set t_Co=256
     let g:solarized_termcolors=256
-endif
+"endif
 
 " Set background according to time
 if strftime("%H") >= 10 && strftime("%H") < 23

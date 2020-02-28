@@ -1,0 +1,193 @@
+
+# :config - Modify kakrc
+def config %{
+    edit ~/.config/kak/kakrc
+}
+
+# Plugin Management
+# –––––––––––––––––
+# Source plug.kak. The plugin manager.
+source "%val{config}/plugins/plug.kak/rc/plug.kak"
+# Allow plug to manage itself. It's already been loaded.
+plug "andreyorst/plug.kak" noload
+plug "alexherbo2/kakoune-dracula-theme" theme
+plug "ul/kak-lsp" do %{
+    cargo install --locked --force --path .
+} config %{
+    # Activated filetypes
+    hook global WinSetOption filetype=latex lsp-enable-window
+    lsp-auto-hover-enable
+    set global lsp_hover_anchor true
+    map -docstring 'Go to implementation' global normal <F12> ': lsp-implementation<ret>'
+    map -docstring 'Rename symbol'        global normal <F2>  ': lsp-rename-prompt<ret>'
+    map -docstring 'Lsp Menu'             global user m       ': lsp-code-actions<ret>'
+    map -docstring 'Next error'           global user n       ': lsp-find-error<ret>'
+    map -docstring 'Previous error'       global user p       ': lsp-find-error --previous<ret>'
+    #TODO add lsp_diagnostics_error_count to modeline
+}
+plug "occivink/kakoune-snippets" config %{
+
+}
+plug "alexherbo2/auto-pairs.kak"
+plug "alexherbo2/connect.kak"
+# plug "andreyorst/smarttab.kak" defer smarttab %{
+    
+# } config %{
+#     # these languages will use `expandtab' behavior
+#     hook global WinSetOption filetype=(rust|markdown|kak|lisp|scheme|sh|perl) expandtab
+#     # these languages will use `noexpandtab' behavior
+#     hook global WinSetOption filetype=(makefile|gas) noexpandtab
+#     # these languages will use `smarttab' behavior
+#     hook global WinSetOption filetype=(c|cpp) smarttab
+# }
+plug "andreyorst/powerline.kak" defer powerline %{
+    set-option global powerline_format 'powerline-format git bufname filetype mode_info line_column position'
+    set-option global powerline_separator curve
+    set-option global powerline_shorten_bufname short
+    powerline-toggle-module line_column
+    powerline-theme gruvbox
+} config %{
+    # powerline-start #TODO it doesn't work
+}
+
+
+
+
+
+
+# General Short-cuts and custom mappings
+# ––––––––––––––––––––––––––––––––––––––
+# <c-q> - Return to normal mode
+map  global insert <c-q> <esc>
+map  global prompt <c-q> <esc>
+# <c-s> - Save file
+map  global normal <c-s> ': w<ret>'
+map  global insert <c-s> '<a-;>: w<ret>'
+# <tab>/<s-tab> for completion selection
+hook global InsertCompletionShow .* %{
+    map   window insert <tab> <c-n>;
+    map   window insert <s-tab> <c-p>
+}
+hook global InsertCompletionHide .* %{
+    unmap window insert <tab> <c-n>;
+    unmap window insert <s-tab> <c-p>
+}
+# Ctrl for moving objects in insert mode
+map  global insert <c-left>    "<a-;>b<a-;>;"
+map  global insert <c-right>   "<a-;>w<a-;>;"
+map  global insert <c-up>      "<a-;>[p<a-;>;"
+map  global insert <c-down>    "<a-;>]p<a-;>;"
+map  global insert <c-s-left>  "<a-;>B"
+map  global insert <c-s-right> "<a-;>W"
+map  global insert <c-s-up>    "<a-;>{p"
+map  global insert <c-s-down>  "<a-;>}p"
+map  global normal <c-left>    "b;"
+map  global normal <c-right>   "w;"
+map  global normal <c-up>      "[p;"
+map  global normal <c-down>    "]p;"
+map  global normal <c-s-left>  "B"
+map  global normal <c-s-right> "W"
+map  global normal <c-s-up>    "{p"
+map  global normal <c-s-down>  "}p"
+# Alt for moving lines above and below
+map  global insert <a-up>      "<esc><a-x>dkPkA"
+map  global insert <a-down>    "<esc><a-x>dpjA"
+map  global normal <a-up>      "<a-x>dkPkA<esc>"
+map  global normal <a-down>    "<a-x>dpjA<esc>"
+# <#> Comments #TODO put to ctrl-/ and in insert mode
+map  global normal '#' ': comment-line<ret>'
+# <'> and <"> puts selected text between quotes
+# The second macro overrides use register
+# map  global insert "'" "<a-;>| head -c -1 | (printf \'; cat; printf \';)<ret>"
+map  global normal "'" "| head -c -1 | (printf \'; cat; printf \';)<ret>"
+map  global normal '"' '| head -c -1 | (printf \"; cat; printf \";)<ret>'
+# <c-d> Select occurences of current word
+define-command -override -docstring "select a word under cursor, or add cursor on next occurrence of current selection" \
+select-or-add-cursor %{ execute-keys -save-regs '' %sh{
+    if [ $(expr $(echo $kak_selection | wc -m) - 1) -eq 1 ]; then
+        echo "<a-i>w*"
+    else
+        echo "*<s-n>"
+    fi
+}}
+map  global normal '<c-d>' ': select-or-add-cursor<ret>' -docstring "Select current word (or next occurrence)" 
+map  global insert '<c-d>' '<esc>: select-or-add-cursor<ret>' -docstring "Select current word (or next occurrence)"
+# Tabulation Configuration
+set  global tabstop 4
+# Notes highlighting for code
+add-highlighter global/ regex (\b|%|//|#)?(TODO|FIXME|XXX|NOTE)\b 0:default+rb
+
+
+# User Experience
+# –––––––––––––––
+colorscheme dracula
+add-highlighter global/ number-lines
+# set -add global autoinfo normal
+
+
+# Latex Specific
+# ––––––––––––––_
+hook global BufCreate .*\.(tex|latex) %{
+    set-option buffer filetype latex
+}
+
+hook global WinSetOption filetype=latex %{
+    colorscheme gruvbox
+    # Line Wrapping
+    add-highlighter window/ wrap -indent -width 95
+    define-command -docstring "compile header.tex" \
+    compile2pdf %{ echo %sh{
+        texfot pdflatex -halt-on-error -output-dir out header.tex
+	}}
+    # Compile on save
+    # hook window BufWritePost .* %{ %sh{ pdflatex header.tex } }
+    map window normal '<c-w>' ': compile2pdf<ret>'
+}
+
+hook global BufCreate .*\.(markdown|md|mkd) %{
+    set-option buffer filetype markdown
+}
+
+hook global WinSetOption filetype=markdown %{
+    # Line Wrapping
+    add-highlighter window/ wrap -indent -width 95
+}
+
+hook global WinDisplay .*\.(l) %{
+    remove-highlighter shared/c/string
+}
+
+hook global WinSetOption filetype=(c|cpp) %{
+    add-highlighter window/ wrap -indent -width 95
+}
+
+# Highlight the word under the cursor
+# ───────────────────────────────────
+declare-option -hidden regex curword
+set-face global CurWord default,rgb:4a4a4a
+hook global NormalIdle .* %{
+    eval -draft %{ try %{
+        exec <space><a-i>w <a-k>\A\w+\z<ret>
+        set-option buffer curword "\b\Q%val{selection}\E\b"
+    } catch %{
+        set-option buffer curword ''
+    } }
+}
+add-highlighter global/ dynregex '%opt{curword}' 0:CurWord
+
+
+# System clipboard handling
+# ─────────────────────────
+evaluate-commands %sh{
+    case $(uname) in
+        Linux) copy="xclip -i"; paste="xclip -o" ;;
+        Darwin)  copy="pbcopy"; paste="pbpaste" ;;
+    esac
+
+    printf "map global user -docstring 'paste (after) from clipboard' p '!%s<ret>'\n" "$paste"
+    printf "map global user -docstring 'paste (before) from clipboard' P '<a-!>%s<ret>'\n" "$paste"
+    printf "map global user -docstring 'yank to clipboard' y '<a-|>%s<ret>:echo -markup %%{{Information}copied selection to X11 clipboard}<ret>'\n" "$copy"
+    printf "map global user -docstring 'replace from clipboard' R '|%s<ret>'\n" "$paste"
+}
+
+
