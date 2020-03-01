@@ -13,9 +13,10 @@ plug "andreyorst/plug.kak" noload
 plug "alexherbo2/kakoune-dracula-theme" theme
 plug "ul/kak-lsp" do %{
     cargo install --locked --force --path .
+    ln -f target/release/kak-lsp ~/.local/bin/
 } config %{
     # Activated filetypes
-    hook global WinSetOption filetype=latex lsp-enable-window
+    hook global WinSetOption filetype=(c|cpp|latex) lsp-enable-window
     lsp-auto-hover-enable
     set global lsp_hover_anchor true
     map -docstring 'Go to implementation' global normal <F12> ': lsp-implementation<ret>'
@@ -49,8 +50,10 @@ plug "andreyorst/powerline.kak" defer powerline %{
 } config %{
     # powerline-start #TODO it doesn't work
 }
-
-
+plug "eraserhd/kak-ansi"
+plug "lePerdu/kakboard" %{
+    hook global WinCreate .* %{ kakboard-enable }
+}
 
 
 
@@ -120,7 +123,7 @@ add-highlighter global/ regex (\b|%|//|#)?(TODO|FIXME|XXX|NOTE)\b 0:default+rb
 
 # User Experience
 # –––––––––––––––
-colorscheme dracula
+colorscheme gruvbox
 add-highlighter global/ number-lines
 # set -add global autoinfo normal
 
@@ -135,7 +138,7 @@ hook global WinSetOption filetype=latex %{
     colorscheme gruvbox
     # Line Wrapping
     add-highlighter window/ wrap -indent -width 95
-    define-command -docstring "compile header.tex" \
+    define-command -override -docstring "compile header.tex" \
     compile2pdf %{ echo %sh{
         texfot pdflatex -halt-on-error -output-dir out header.tex
 	}}
@@ -159,6 +162,41 @@ hook global WinDisplay .*\.(l) %{
 
 hook global WinSetOption filetype=(c|cpp) %{
     add-highlighter window/ wrap -indent -width 95
+    map buffer normal '<c-w>' ': cf test<ret>'
+    map buffer insert '<c-w>' '<a-;>: cf test<ret>'
+}
+
+hook global WinSetOption filetype=cf %{
+    add-highlighter window/ regex "Failed #[0-9]*" 0:red
+    add-highlighter window/ regex "Passed #[0-9]*" 0:green
+    add-highlighter window/ regex [-]{3,}[a-zA-Z]*[-]{3,} 0:blue
+    ansi-render
+    hook -group ansi buffer BufReadFifo .* %{
+        evaluate-commands -draft %sh{
+            printf "select %s\n" "$kak_hook_param"
+            printf "execute-keys 'Z<a-:><a-;>gH<a-z>u'\n"
+            printf "ansi-render-selection\n"
+        }
+    }
+}
+
+hook global WinDisplay .*/cpc/.*\.cpp %{
+    define-command -override -params .. \
+    -docstring %{
+        cf [<arguments>]: cf utility wrapper
+        All the optional arguments are forwarded to the cf utility
+     } cf %{ evaluate-commands %sh{
+     output=$(mktemp -d "${TMPDIR:-/tmp}"/kak-cf.XXXXXXXX)/fifo
+     mkfifo ${output}
+     ( eval cf "$@" > ${output} 2>&1 & ) > /dev/null 2>&1 < /dev/null
+
+     printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
+               edit! -fifo ${output} -scroll *cf*
+               set-option buffer filetype cf
+               set-option buffer make_current_error_line 0
+               hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r $(dirname ${output}) } }
+           }"
+     }}
 }
 
 # Highlight the word under the cursor
