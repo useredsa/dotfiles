@@ -162,8 +162,6 @@ hook global WinDisplay .*\.(l) %{
 
 hook global WinSetOption filetype=(c|cpp) %{
     add-highlighter window/ wrap -indent -width 95
-    map buffer normal '<c-w>' ': cf test<ret>'
-    map buffer insert '<c-w>' '<a-;>: cf test<ret>'
 }
 
 hook global WinSetOption filetype=cf %{
@@ -186,17 +184,43 @@ hook global WinDisplay .*/cpc/.*\.cpp %{
         cf [<arguments>]: cf utility wrapper
         All the optional arguments are forwarded to the cf utility
      } cf %{ evaluate-commands %sh{
-     output=$(mktemp -d "${TMPDIR:-/tmp}"/kak-cf.XXXXXXXX)/fifo
-     mkfifo ${output}
-     ( eval cf "$@" > ${output} 2>&1 & ) > /dev/null 2>&1 < /dev/null
+         output=$(mktemp -d "${TMPDIR:-/tmp}"/kak-cf.XXXXXXXX)/fifo
+         mkfifo ${output}
+         ( eval cf "$@" > ${output} 2>&1 & ) > /dev/null 2>&1 < /dev/null
 
-     printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
+         printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
                edit! -fifo ${output} -scroll *cf*
                set-option buffer filetype cf
                set-option buffer make_current_error_line 0
                hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r $(dirname ${output}) } }
-           }"
+               }"
      }}
+
+    define-command -override \
+    -docstring %{
+        new-test-case: add a new testcase
+    } new-test-case %{ evaluate-commands %sh{
+        i=1
+        while true; do
+            # printf "in$i.txt\n"
+            if [ ! -e "in$i.txt" ]; then
+                break
+            fi
+            i=$((i+1))
+        done
+
+        input="in$i.txt"
+        output="ans$i.txt"
+        printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
+            edit! ${output}
+            edit! ${input}
+            }"
+    }}
+
+    map buffer normal '<c-w>' ': cf test<ret>'
+    map buffer insert '<c-w>' '<a-;>: cf test<ret>'
+    map buffer normal '<F1>'  ': new-test-case<ret>'
+    map buffer insert '<F1>'  '<a-;>: new-test-case<ret>'
 }
 
 # Highlight the word under the cursor
