@@ -162,14 +162,9 @@ hook global WinDisplay .*\.(l) %{
 
 hook global WinSetOption filetype=(c|cpp) %{
     add-highlighter window/ wrap -indent -width 95
-    map buffer normal '<c-w>' ': cf test<ret>'
-    map buffer insert '<c-w>' '<a-;>: cf test<ret>'
 }
 
 hook global WinSetOption filetype=cf %{
-    # add-highlighter window/ regex "Failed #[0-9]*" 0:red
-    # add-highlighter window/ regex "Passed #[0-9]*" 0:green
-    # add-highlighter window/ regex [-]{3,}[a-zA-Z]*[-]{3,} 0:blue
     ansi-render
     hook -group ansi buffer BufReadFifo .* %{
         evaluate-commands -draft %sh{
@@ -197,13 +192,39 @@ hook global WinDisplay .*/cpc/.*\.cpp %{
      mkfifo ${output}
      ( script -efq -c "cf $@" ${discard} >${output} & ) >/dev/null 2>&1 </dev/null
 
-     printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
+         printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
                edit! -fifo ${output} -scroll *cf*
                set-option buffer filetype cf
                set-option buffer make_current_error_line 0
                hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r $(dirname ${output}) } }
-           }"
+               }"
      }}
+
+    define-command -override \
+    -docstring %{
+        new-test-case: add a new testcase
+    } new-test-case %{ evaluate-commands %sh{
+        i=1
+        while true; do
+            # printf "in$i.txt\n"
+            if [ ! -e "in$i.txt" ]; then
+                break
+            fi
+            i=$((i+1))
+        done
+
+        input="in$i.txt"
+        output="ans$i.txt"
+        printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
+            edit! ${output}
+            edit! ${input}
+            }"
+    }}
+
+    map buffer normal '<c-w>' ': cf test<ret>'
+    map buffer insert '<c-w>' '<a-;>: cf test<ret>'
+    map buffer normal '<F1>'  ': new-test-case<ret>'
+    map buffer insert '<F1>'  '<a-;>: new-test-case<ret>'
 }
 
 # Highlight the word under the cursor
