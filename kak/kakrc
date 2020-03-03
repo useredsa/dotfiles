@@ -167,10 +167,16 @@ hook global WinSetOption filetype=(c|cpp) %{
 }
 
 hook global WinSetOption filetype=cf %{
-    add-highlighter window/ regex "Failed #[0-9]*" 0:red
-    add-highlighter window/ regex "Passed #[0-9]*" 0:green
-    add-highlighter window/ regex [-]{3,}[a-zA-Z]*[-]{3,} 0:blue
+    # add-highlighter window/ regex "Failed #[0-9]*" 0:red
+    # add-highlighter window/ regex "Passed #[0-9]*" 0:green
+    # add-highlighter window/ regex [-]{3,}[a-zA-Z]*[-]{3,} 0:blue
     ansi-render
+    hook -group ansi buffer BufReadFifo .* %{
+        evaluate-commands -draft %sh{
+            printf "select %s\n" "$kak_hook_param"
+            printf "execute-keys 's\\\\r\\\\n<ret>hd<space>'"
+        }
+    }
     hook -group ansi buffer BufReadFifo .* %{
         evaluate-commands -draft %sh{
             printf "select %s\n" "$kak_hook_param"
@@ -187,8 +193,9 @@ hook global WinDisplay .*/cpc/.*\.cpp %{
         All the optional arguments are forwarded to the cf utility
      } cf %{ evaluate-commands %sh{
      output=$(mktemp -d "${TMPDIR:-/tmp}"/kak-cf.XXXXXXXX)/fifo
+     discard=$(mktemp -d "${TMPDIR:-/tmp}"/kak-cf.XXXXXXXX)/discard
      mkfifo ${output}
-     ( eval cf "$@" > ${output} 2>&1 & ) > /dev/null 2>&1 < /dev/null
+     ( script -efq -c "cf $@" ${discard} >${output} & ) >/dev/null 2>&1 </dev/null
 
      printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
                edit! -fifo ${output} -scroll *cf*
