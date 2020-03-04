@@ -75,6 +75,35 @@ hook global InsertCompletionHide .* %{
     unmap window insert <tab> <c-n>;
     unmap window insert <s-tab> <c-p>
 }
+# Home moves/expand to the begining of line/non blank depending on position
+define-command -override -hidden home-movement %{
+    # Run each selection independently so that the
+    # test does not just remove failing selections.
+    eval -itersel %{ 
+        try %{
+            exec -draft %{ <a-h><a-k>\A\h+.\z<ret> } # check that the preceeding characters are horizontal whitespaces
+            exec gh # if the previous line does not fail, go to begining of line
+        } catch %{
+            exec gi # if it failed, go to first non blank character
+        }
+    }
+}
+define-command -override -hidden home-expansion %{
+    # Run each selection independently so that the
+    # test does not just remove failing selections.
+    eval -itersel %{ 
+        try %{
+            exec -draft %{ <a-h><a-k>\A\h+.\z<ret> } # check that the preceeding characters are horizontal whitespaces
+            exec Gh # if the previous line does not fail, go to begining of line
+        } catch %{
+            exec Gi # if it failed, go to first non blank character
+        }
+    }
+}
+map global insert <home>      "<a-;>: home-movement<ret>"
+map global insert <s-home>    "<a-;>: home-expansion<ret>"
+map global normal <home>      ": home-movement<ret>"
+map global normal <s-home>    ": home-expansion<ret>"
 # Ctrl for moving objects in insert mode
 map  global insert <c-left>    "<a-;>b<a-;>;"
 map  global insert <c-right>   "<a-;>w<a-;>;"
