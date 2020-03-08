@@ -20,10 +20,10 @@ plug "ul/kak-lsp" do %{
     lsp-auto-hover-enable
     set global lsp_hover_anchor true
     map -docstring 'Go to implementation' global normal <F12> ': lsp-implementation<ret>'
-    map -docstring 'Rename symbol'        global normal <F2>  ': lsp-rename-prompt<ret>'
-    map -docstring 'Lsp Menu'             global user m       ': lsp-code-actions<ret>'
-    map -docstring 'Next error'           global user n       ': lsp-find-error<ret>'
-    map -docstring 'Previous error'       global user p       ': lsp-find-error --previous<ret>'
+    map -docstring 'Rename symbol'       global normal <F2>  ': lsp-rename-prompt<ret>'
+    map -docstring 'Lsp Menu'            global user m       ': lsp-code-actions<ret>'
+    map -docstring 'Next error'          global user n       ': lsp-find-error<ret>'
+    map -docstring 'Previous error'      global user p       ': lsp-find-error --previous<ret>'
     #TODO add lsp_diagnostics_error_count to modeline
 }
 plug "occivink/kakoune-snippets" config %{
@@ -54,6 +54,35 @@ plug "eraserhd/kak-ansi"
 plug "lePerdu/kakboard" %{
     hook global WinCreate .* %{ kakboard-enable }
 }
+plug "https://gitlab.com/fsub/kakoune-mark" %{
+    map global normal <F8> ': mark-word<ret>'
+    map global insert <F8> '<a-;>: mark-word<ret>'
+}
+plug "occivink/kakoune-phantom-selection" %{
+    define-command -hidden -override -docstring "Creates a phantom group of selections" \
+    phantom-group %{
+        phantom-selection-add-selection
+        map buffer normal <tab>   ': phantom-selection-iterate-next<ret>'
+        map buffer insert <tab>   '<esc>: phantom-selection-iterate-next<ret>i'
+        map buffer normal <s-tab> ': phantom-selection-iterate-prev<ret>'
+        map buffer insert <s-tab> '<esc>: phantom-selection-iterate-prev<ret>i'
+        map buffer normal <c-g>   ': phantom-ungroup<ret>'
+        map buffer insert <c-g>   '<esc>: phantom-ungroup<ret>i'
+    }
+    define-command -hidden -override -docstring "Removes a phantom group of selections" \
+    phantom-ungroup %{
+        phantom-selection-select-all
+        phantom-selection-clear
+        unmap buffer normal <tab>   ': phantom-selection-iterate-next<ret>'
+        unmap buffer insert <tab>   '<esc>: phantom-selection-iterate-next<ret>i'
+        unmap buffer normal <s-tab> ': phantom-selection-iterate-prev<ret>'
+        unmap buffer insert <s-tab> '<esc>: phantom-selection-iterate-prev<ret>i'
+        unmap buffer normal <c-g>   ': phantom-ungroup<ret>'
+        unmap buffer insert <c-g>   '<esc>: phantom-ungroup<ret>i'
+    }
+    map global normal <c-g>  ': phantom-group<ret><space>'
+    map global insert <c-g>  '<a-;>: phantom-group<ret><a-;><space>'
+}
 
 
 
@@ -61,15 +90,15 @@ plug "lePerdu/kakboard" %{
 # General Short-cuts and custom mappings
 # ––––––––––––––––––––––––––––––––––––––
 # <c-q> - Return to normal mode
-map  global insert <c-q> <esc>
-map  global prompt <c-q> <esc>
+map global insert <c-q> <esc>
+map global prompt <c-q> <esc>
 # <c-s> - Save file
-map  global normal <c-s> ': w<ret>'
-map  global insert <c-s> '<a-;>: w<ret>'
+map global normal <c-s> ': w<ret>'
+map global insert <c-s> '<a-;>: w<ret>'
 # <tab>/<s-tab> for completion selection
 hook global InsertCompletionShow .* %{
-    map   window insert <tab> <c-n>;
-    map   window insert <s-tab> <c-p>
+    map window insert <tab> <c-n>;
+    map window insert <s-tab> <c-p>
 }
 hook global InsertCompletionHide .* %{
     unmap window insert <tab> <c-n>;
@@ -100,39 +129,39 @@ define-command -override -hidden home-expansion %{
         }
     }
 }
-map global insert <home>      "<a-;>: home-movement<ret>"
-map global insert <s-home>    "<a-;>: home-expansion<ret>"
+map global insert <home>      "<esc>: home-movement<ret>i"
+map global insert <s-home>    "<esc>: home-expansion<ret>i"
 map global normal <home>      ": home-movement<ret>"
 map global normal <s-home>    ": home-expansion<ret>"
 # Ctrl for moving objects in insert mode
-map  global insert <c-left>    "<a-;>b<a-;>;"
-map  global insert <c-right>   "<a-;>w<a-;>;"
-map  global insert <c-up>      "<a-;>[p<a-;>;"
-map  global insert <c-down>    "<a-;>]p<a-;>;"
-map  global insert <c-s-left>  "<a-;>B"
-map  global insert <c-s-right> "<a-;>W"
-map  global insert <c-s-up>    "<a-;>{p"
-map  global insert <c-s-down>  "<a-;>}p"
-map  global normal <c-left>    "b;"
-map  global normal <c-right>   "w;"
-map  global normal <c-up>      "[p;"
-map  global normal <c-down>    "]p;"
-map  global normal <c-s-left>  "B"
-map  global normal <c-s-right> "W"
-map  global normal <c-s-up>    "{p"
-map  global normal <c-s-down>  "}p"
+map global insert <c-left>    "<a-;>b<a-;>;"
+map global insert <c-right>   "<a-;>w<a-;>;"
+map global insert <c-up>      "<a-;>[p<a-;>;"
+map global insert <c-down>    "<a-;>]p<a-;>;"
+map global insert <c-s-left>  "<a-;>B"
+map global insert <c-s-right> "<a-;>W"
+map global insert <c-s-up>    "<a-;>{p"
+map global insert <c-s-down>  "<a-;>}p"
+map global normal <c-left>    "b;"
+map global normal <c-right>   "w;"
+map global normal <c-up>      "[p;"
+map global normal <c-down>    "]p;"
+map global normal <c-s-left>  "B"
+map global normal <c-s-right> "W"
+map global normal <c-s-up>    "{p"
+map global normal <c-s-down>  "}p"
 # Alt for moving lines above and below
-map  global insert <a-up>      "<esc><a-x>dkPkA"
-map  global insert <a-down>    "<esc><a-x>dpjA"
-map  global normal <a-up>      "<a-x>dkPkA<esc>"
-map  global normal <a-down>    "<a-x>dpjA<esc>"
+map global insert <a-up>      "<esc><a-x>dkPkA"
+map global insert <a-down>    "<esc><a-x>dpjA"
+map global normal <a-up>      "<a-x>dkPkA<esc>"
+map global normal <a-down>    "<a-x>dpjA<esc>"
 # <#> Comments #TODO put to ctrl-/ and in insert mode
-map  global normal '#' ': comment-line<ret>'
+map global normal '#' ': comment-line<ret>'
 # <'> and <"> puts selected text between quotes
 # The second macro overrides use register
-# map  global insert "'" "<a-;>| head -c -1 | (printf \'; cat; printf \';)<ret>"
-map  global normal "'" "| head -c -1 | (printf \'; cat; printf \';)<ret>"
-map  global normal '"' '| head -c -1 | (printf \"; cat; printf \";)<ret>'
+# map global insert "'" "<a-;>| head -c -1 | (printf \'; cat; printf \';)<ret>"
+map global normal "'" "| head -c -1 | (printf \'; cat; printf \';)<ret>"
+map global normal '"' '| head -c -1 | (printf \"; cat; printf \";)<ret>'
 # <c-d> Select occurences of current word
 define-command -override -docstring "select a word under cursor, or add cursor on next occurrence of current selection" \
 select-or-add-cursor %{ execute-keys -save-regs '' %sh{
@@ -142,10 +171,10 @@ select-or-add-cursor %{ execute-keys -save-regs '' %sh{
         echo "*<s-n>"
     fi
 }}
-map  global normal '<c-d>' ': select-or-add-cursor<ret>' -docstring "Select current word (or next occurrence)" 
-map  global insert '<c-d>' '<esc>: select-or-add-cursor<ret>' -docstring "Select current word (or next occurrence)"
+map global normal '<c-d>' ': select-or-add-cursor<ret>' -docstring "Select current word (or next occurrence)" 
+map global insert '<c-d>' '<esc>: select-or-add-cursor<ret>' -docstring "Select current word (or next occurrence)"
 # Tabulation Configuration
-set  global tabstop 4
+set global tabstop 4
 # Notes highlighting for code
 add-highlighter global/ regex (\b|%|//|#)?(TODO|FIXME|XXX|NOTE)\b 0:default+rb
 
@@ -219,7 +248,8 @@ hook global WinDisplay .*/cpc/.*\.cpp %{
      output=$(mktemp -d "${TMPDIR:-/tmp}"/kak-cf.XXXXXXXX)/fifo
      discard=$(mktemp -d "${TMPDIR:-/tmp}"/kak-cf.XXXXXXXX)/discard
      mkfifo ${output}
-     ( script -efq -c "cf $@" ${discard} >${output} & ) >/dev/null 2>&1 </dev/null
+     command="cf $@"
+     ( script -efq -c "$command" ${discard} >${output} & ) >/dev/null 2>&1 </dev/null
 
          printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
                edit! -fifo ${output} -scroll *cf*
@@ -250,8 +280,8 @@ hook global WinDisplay .*/cpc/.*\.cpp %{
             }"
     }}
 
-    map buffer normal '<c-w>' ': cf test<ret>'
-    map buffer insert '<c-w>' '<a-;>: cf test<ret>'
+    map buffer normal '<c-w>' ': cf test %val{buffile}<ret>'
+    map buffer insert '<c-w>' '<a-;>: cf test %val{buffile}<ret>'
     map buffer normal '<F1>'  ': new-test-case<ret>'
     map buffer insert '<F1>'  '<a-;>: new-test-case<ret>'
 }
