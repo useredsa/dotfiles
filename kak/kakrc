@@ -55,8 +55,10 @@ plug "lePerdu/kakboard" %{
     hook global WinCreate .* %{ kakboard-enable }
 }
 plug "https://gitlab.com/fsub/kakoune-mark" %{
-    map global normal <F8> ': mark-word<ret>'
-    map global insert <F8> '<a-;>: mark-word<ret>'
+    map global normal <F8>   ': mark-word<ret>'
+    map global insert <F8>   '<a-;>: mark-word<ret>'
+    map global normal <s-F8> ': mark-clear<ret>'
+    map global insert <s-F8> '<a-;>: mark-clear<ret>'
 }
 plug "occivink/kakoune-phantom-selection" %{
     define-command -hidden -override -docstring "Creates a phantom group of selections" \
@@ -80,8 +82,8 @@ plug "occivink/kakoune-phantom-selection" %{
         unmap buffer normal <c-g>   ': phantom-ungroup<ret>'
         unmap buffer insert <c-g>   '<esc>: phantom-ungroup<ret>i'
     }
-    map global normal <c-g>  ': phantom-group<ret><space>'
-    map global insert <c-g>  '<a-;>: phantom-group<ret><a-;><space>'
+    map global normal <c-g> ': phantom-group<ret><space>'
+    map global insert <c-g> '<a-;>: phantom-group<ret><a-;><space>'
 }
 
 
