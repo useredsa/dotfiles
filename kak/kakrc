@@ -74,7 +74,7 @@ plug "occivink/kakoune-phantom-selection" %{
         phantom-selection-select-all
         phantom-selection-clear
         unmap buffer normal <tab>   ': phantom-selection-iterate-next<ret>'
-        unmap buffer insert <tab>   '<esc>: phantom-selection-iterate-next<ret>i'
+        map   buffer insert <tab>   '<tab>'
         unmap buffer normal <s-tab> ': phantom-selection-iterate-prev<ret>'
         unmap buffer insert <s-tab> '<esc>: phantom-selection-iterate-prev<ret>i'
         unmap buffer normal <c-g>   ': phantom-ungroup<ret>'
