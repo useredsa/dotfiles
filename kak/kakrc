@@ -3,6 +3,9 @@
 def config %{
     edit ~/.config/kak/kakrc
 }
+def update-config %{
+    # source #TODO
+}
 
 # Plugin Management
 # –––––––––––––––––

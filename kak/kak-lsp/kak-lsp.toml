@@ -4,5 +4,7 @@ roots = ["header.tex"]
 command = "/home/useredsa/bin/texlab"
 [language.c_cpp]
 filetypes = ["c", "cpp"]
-roots = ["compile_commands.json", ".clangd-9", ".git"]
-command = "clangd"
+roots = [".ccls-root", "compile_commands.json", ".git"]
+command = "ccls"
+# kak-lsp does not support newText https://github.com/ul/kak-lsp/issues/40
+args = ["--init={\"completion\":{\"detailedLabel\":false}}"]
