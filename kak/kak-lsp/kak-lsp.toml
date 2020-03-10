@@ -1,6 +1,6 @@
 [language.latex]
 filetypes = ["latex"]
-roots = ["header.tex"]
+roots = ["header.tex", "out"]
 command = "/home/useredsa/bin/texlab"
 [language.c_cpp]
 filetypes = ["c", "cpp"]
