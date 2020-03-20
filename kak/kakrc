@@ -3,6 +3,7 @@
 def config %{
     edit ~/.config/kak/kakrc
 }
+#TODO restart
 
 # Plugin Management
 # –––––––––––––––––
@@ -26,10 +27,10 @@ plug "ul/kak-lsp" do %{
     map -docstring 'Previous error'      global user p       ': lsp-find-error --previous<ret>'
     #TODO add lsp_diagnostics_error_count to modeline
 }
-plug "occivink/kakoune-snippets" config %{
-
+plug "occivink/kakoune-snippets"
+plug "alexherbo2/auto-pairs.kak" %{
+    set-option global auto-pairs ( ) { }
 }
-plug "alexherbo2/auto-pairs.kak"
 plug "alexherbo2/connect.kak"
 # plug "andreyorst/smarttab.kak" defer smarttab %{
     
@@ -85,6 +86,18 @@ plug "occivink/kakoune-phantom-selection" %{
     map global normal <c-g> ': phantom-group<ret><space>'
     map global insert <c-g> '<a-;>: phantom-group<ret><a-;><space>'
 }
+plug "alexherbo2/move-line.kak" %{
+    map global normal <a-up>   ': move-line-above<ret>;'
+    map global normal <a-down> ': move-line-below<ret>;'
+    map global insert <a-up>   '<a-;>: move-line-above<ret>'
+    map global insert <a-down> '<a-;>: move-line-below<ret>'
+}
+plug 'h-youhei/kakoune-surround' %[
+   map global user <"> ': surround<ret>"' -docstring 'surround with ""'
+   map global user <'> ": surround<ret>'" -docstring "surround with ''"
+   map global user '(' ': surround<ret>(' -docstring 'surround with ()'
+   map global user <{> ': surround<ret>{' -docstring 'surround with {}'
+]
 
 
 
@@ -94,31 +107,40 @@ plug "occivink/kakoune-phantom-selection" %{
 # <c-q> - Return to normal mode
 map global insert <c-q> <esc>
 map global prompt <c-q> <esc>
+# <c-e> - Edit file, <c-w> - Close buffer
+map global normal <c-e> ': edit '
+map global insert <c-e> '<esc>: edit '
+map global normal <c-E> ': buffer '
+map global insert <c-E> '<esc>: buffer '
+map global normal <c-w> ': db<ret>'
+map global insert <c-w> '<esc>: db<ret>'
 # <c-s> - Save file
 map global normal <c-s> ': w<ret>'
 map global insert <c-s> '<a-;>: w<ret>'
+map global  user  <c-s> '<c-s>'
+# <c-p> - Open prompt in insert
+map global insert <c-p> '<a-;>:'
+# <#> Comments lines
+map global normal '#' ': comment-line<ret>'
 # <tab>/<s-tab> for completion selection
 hook global InsertCompletionShow .* %{
-    map window insert <tab> <c-n>;
-    map window insert <s-tab> <c-p>
+    map window insert <tab>   '<c-n>'
+    map window insert <s-tab> '<c-p>'
+    map window insert <esc>   '<c-o>'
+    map window insert <c-q>   '<c-o>'
 }
 hook global InsertCompletionHide .* %{
-    unmap window insert <tab> <c-n>;
-    unmap window insert <s-tab> <c-p>
+    unmap window insert <tab>   '<c-n>'
+    unmap window insert <s-tab> '<c-p>'
+    unmap window insert <esc>   '<c-o>'
+    unmap window insert <c-q>   '<c-o>'
 }
+# automatic group of changes in insert
+#TODO
+
+# Movement
+# ––––––––––––––––––––––––––––––––––––––
 # Home moves/expand to the begining of line/non blank depending on position
-define-command -override -hidden home-movement %{
-    # Run each selection independently so that the
-    # test does not just remove failing selections.
-    eval -itersel %{ 
-        try %{
-            exec -draft %{ <a-h><a-k>\A\h+.\z<ret> } # check that the preceeding characters are horizontal whitespaces
-            exec gh # if the previous line does not fail, go to begining of line
-        } catch %{
-            exec gi # if it failed, go to first non blank character
-        }
-    }
-}
 define-command -override -hidden home-expansion %{
     # Run each selection independently so that the
     # test does not just remove failing selections.
@@ -131,39 +153,68 @@ define-command -override -hidden home-expansion %{
         }
     }
 }
-map global insert <home>      "<esc>: home-movement<ret>i"
-map global insert <s-home>    "<esc>: home-expansion<ret>i"
-map global normal <home>      ": home-movement<ret>"
-map global normal <s-home>    ": home-expansion<ret>"
+map global insert <home>      '<esc>: home-expansion<ret>;i'
+map global insert <s-home>    '<esc>: home-expansion<ret>: enter-user-mode fixsel'
+map global normal <home>      ': home-expansion<ret>;'
+map global normal <s-home>    ': home-expansion<ret>'
+
 # Ctrl for moving objects in insert mode
-map global insert <c-left>    "<a-;>b<a-;>;"
-map global insert <c-right>   "<a-;>w<a-;>;"
-map global insert <c-up>      "<a-;>[p<a-;>;"
-map global insert <c-down>    "<a-;>]p<a-;>;"
-map global insert <c-s-left>  "<a-;>B"
-map global insert <c-s-right> "<a-;>W"
-map global insert <c-s-up>    "<a-;>{p"
-map global insert <c-s-down>  "<a-;>}p"
-map global normal <c-left>    "b;"
-map global normal <c-right>   "w;"
-map global normal <c-up>      "[p;"
-map global normal <c-down>    "]p;"
-map global normal <c-s-left>  "B"
-map global normal <c-s-right> "W"
-map global normal <c-s-up>    "{p"
-map global normal <c-s-down>  "}p"
-# Alt for moving lines above and below
-map global insert <a-up>      "<esc><a-x>dkPkA"
-map global insert <a-down>    "<esc><a-x>dpjA"
-map global normal <a-up>      "<a-x>dkPkA<esc>"
-map global normal <a-down>    "<a-x>dpjA<esc>"
-# <#> Comments #TODO put to ctrl-/ and in insert mode
-map global normal '#' ': comment-line<ret>'
-# <'> and <"> puts selected text between quotes
-# The second macro overrides use register
-# map global insert "'" "<a-;>| head -c -1 | (printf \'; cat; printf \';)<ret>"
-map global normal "'" "| head -c -1 | (printf \'; cat; printf \';)<ret>"
-map global normal '"' '| head -c -1 | (printf \"; cat; printf \";)<ret>'
+map global insert <c-left>    '<a-;>b<a-;>;'
+map global insert <c-right>   '<a-;>w<a-;>;'
+map global insert <c-up>      '<a-;>[p<a-;>;'
+map global insert <c-down>    '<a-;>]p<a-;>;'
+map global normal <c-left>    'b;'
+map global normal <c-right>   'w;'
+map global normal <c-up>      '[p;'
+map global normal <c-down>    ']p;'
+
+# Selection
+# ––––––––––––––––––––––––––––––––––––––
+declare-user-mode fixsel
+map global fixsel i 'i'
+map global fixsel a 'a'
+map global fixsel c 'c'
+map global fixsel <backspace> 'c'
+map global fixsel y 'y'
+map global fixsel d 'd'
+map global fixsel m 'm'
+
+# map global fixsel H 'H'
+# map global fixsel L 'L'
+# map global fixsel K 'K'
+# map global fixsel J 'J'
+map global fixsel <s-left>  'H: enter-user-mode fixsel<ret>'
+map global fixsel <s-right> 'L: enter-user-mode fixsel<ret>'
+map global fixsel <s-up>    'K: enter-user-mode fixsel<ret>'
+map global fixsel <s-down>  'J: enter-user-mode fixsel<ret>'
+# map global fixsel B 'B'
+# map global fixsel W 'W'
+# map global fixsel { '{'
+# map global fixsel } '}'
+map global fixsel <c-s-left>  'B: enter-user-mode fixsel<ret>'
+map global fixsel <c-s-right> 'W: enter-user-mode fixsel<ret>'
+map global fixsel <c-s-up>    '{p: enter-user-mode fixsel<ret>'
+map global fixsel <c-s-down>  '}p: enter-user-mode fixsel<ret>'
+map global fixsel <s-home>    ': home-expansion<ret>: enter-user-mode fixsel<ret>'
+map global fixsel <s-end>     'Gl: enter-user-mode fixsel<ret>'
+map global fixsel <"> ': surround<ret>"' -docstring 'surround with ""'
+map global fixsel <'> ": surround<ret>'" -docstring "surround with ''"
+map global fixsel <(> ': surround<ret>(' -docstring 'surround with ()'
+map global fixsel <{> ': surround<ret>{' -docstring 'surround with {}'
+
+map global insert <s-left>    '<esc>H: enter-user-mode fixsel<ret>'
+map global insert <s-right>   '<esc>L: enter-user-mode fixsel<ret>'
+map global insert <s-up>      '<esc>K: enter-user-mode fixsel<ret>'
+map global insert <s-down>    '<esc>J: enter-user-mode fixsel<ret>'
+map global insert <c-s-left>  '<esc>B: enter-user-mode fixsel<ret>'
+map global insert <c-s-right> '<esc>W: enter-user-mode fixsel<ret>'
+map global insert <c-s-up>    '<esc>{p: enter-user-mode fixsel<ret>'
+map global insert <c-s-down>  '<esc>}p: enter-user-mode fixsel<ret>'
+map global normal <c-s-left>  'B: enter-user-mode fixsel<ret>'
+map global normal <c-s-right> 'W: enter-user-mode fixsel<ret>'
+map global normal <c-s-up>    '{p: enter-user-mode fixsel<ret>'
+map global normal <c-s-down>  '}p: enter-user-mode fixsel<ret>'
+
 # <c-d> Select occurences of current word
 define-command -override -docstring "select a word under cursor, or add cursor on next occurrence of current selection" \
 select-or-add-cursor %{ execute-keys -save-regs '' %sh{
@@ -178,7 +229,7 @@ map global insert '<c-d>' '<esc>: select-or-add-cursor<ret>' -docstring "Select 
 # Tabulation Configuration
 set global tabstop 4
 # Notes highlighting for code
-add-highlighter global/ regex (\b|%|//|#)?(TODO|FIXME|XXX|NOTE)\b 0:default+rb
+add-highlighter global/ regex '(\b|%|//|#)? ?(TODO|FIXME|XXX|NOTE)\b' 0:default+rb
 
 
 # User Experience
@@ -188,7 +239,7 @@ add-highlighter global/ number-lines
 # set -add global autoinfo normal
 
 
-# Latex Specific
+# File Specific
 # ––––––––––––––_
 hook global BufCreate .*\.(tex|latex) %{
     set-option buffer filetype latex
