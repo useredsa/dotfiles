@@ -201,13 +201,23 @@ hook global WinSetOption filetype=latex %{
     colorscheme gruvbox
     # Line Wrapping
     add-highlighter window/ wrap -indent -width 95
-    define-command -override -docstring "compile header.tex" \
+    define-command -override -docstring "compile latex" \
     compile2pdf %{ echo %sh{
-        texfot pdflatex -halt-on-error -output-dir out header.tex
+        target=$kak_buffile
+        dir="$(dirname $target)"
+        cd "$dir"
+        if [ -f header.tex ]; then
+            target=header.tex
+        fi
+        printf "Compiling %s to %s\n" "$target" "out"
+        texfot pdflatex -halt-on-error -output-dir "out" "$target"
 	}}
     # Compile on save
     # hook window BufWritePost .* %{ %sh{ pdflatex header.tex } }
     map window normal '<c-w>' ': compile2pdf<ret>'
+
+    # Text structure markup
+    add-highlighter window/ regex '^[^\n]*\\subsection[^\n]*' '0:default,rgb:666666'
 }
 
 hook global BufCreate .*\.(markdown|md|mkd) %{
