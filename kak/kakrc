@@ -217,7 +217,7 @@ hook global WinSetOption filetype=latex %{
     map window normal '<c-w>' ': compile2pdf<ret>'
 
     # Text structure markup
-    add-highlighter window/ regex '^[^\n]*\\subsection[^\n]*' '0:default,rgb:666666'
+    # add-highlighter window/ regex '^[^\n]*\\subsection[^\n]*' '0:default,rgb:666666'
 }
 
 hook global BufCreate .*\.(markdown|md|mkd) %{
