@@ -36,12 +36,9 @@ plug "alexherbo2/auto-pairs.kak" defer auto-pairs %{
 }
 plug "alexherbo2/prelude.kak" do %{}
 plug "alexherbo2/connect.kak" do %{
-    ln -f 'bin/kak-connect' '$HOME/bin/kak-connect'
-    #TODO ln kakoune-connect.desktop
-    ln -f 'share/applications/kakoune-connect.desktop' '$XDG_DATA_HOME/applications/'
-    #TODO curl kakoune's icon
-    curl "https://raw.githubusercontent.com/mawww/kakoune/master/doc/kakoune_logo.svg" \
-        -o "$XDG_DATA_HOME/icons/hicolor/scalable/apps/kakoune.svg"
+    ln -f "bin/kak-connect" "$HOME/bin/"
+    ln -f "share/applications/kakoune-connect.desktop" "$XDG_DATA_HOME/applications/"
+    curl "https://raw.githubusercontent.com/mawww/kakoune/master/doc/kakoune_logo.svg" --create-dirs -o "$XDG_DATA_HOME/icons/hicolor/scalable/apps/kakoune.svg"
 }
 # plug "andreyorst/smarttab.kak" defer smarttab %{
     
