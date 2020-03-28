@@ -24,17 +24,25 @@ plug "ul/kak-lsp" do %{
     lsp-auto-hover-enable
     set global lsp_hover_anchor true
     map -docstring 'Go to implementation' global normal <F12> ': lsp-implementation<ret>'
-    map -docstring 'Rename symbol'       global normal <F2>  ': lsp-rename-prompt<ret>'
-    map -docstring 'Lsp Menu'            global user m       ': lsp-code-actions<ret>'
-    map -docstring 'Next error'          global user n       ': lsp-find-error<ret>'
-    map -docstring 'Previous error'      global user p       ': lsp-find-error --previous<ret>'
+    map -docstring 'Rename symbol'        global normal <F2>  ': lsp-rename-prompt<ret>'
+    map -docstring 'Lsp Menu'             global user m       ': lsp-code-actions<ret>'
+    map -docstring 'Next error'           global user n       ': lsp-find-error<ret>'
+    map -docstring 'Previous error'       global user p       ': lsp-find-error --previous<ret>'
     #TODO add lsp_diagnostics_error_count to modeline
 }
 plug "occivink/kakoune-snippets"
-plug "alexherbo2/auto-pairs.kak" %{
+plug "alexherbo2/auto-pairs.kak" defer auto-pairs %{
     set-option global auto-pairs ( ) { }
 }
-plug "alexherbo2/connect.kak"
+plug "alexherbo2/prelude.kak" do %{}
+plug "alexherbo2/connect.kak" do %{
+    ln -f 'bin/kak-connect' '$HOME/bin/kak-connect'
+    #TODO ln kakoune-connect.desktop
+    ln -f 'share/applications/kakoune-connect.desktop' '$XDG_DATA_HOME/applications/'
+    #TODO curl kakoune's icon
+    curl "https://raw.githubusercontent.com/mawww/kakoune/master/doc/kakoune_logo.svg" \
+        -o "$XDG_DATA_HOME/icons/hicolor/scalable/apps/kakoune.svg"
+}
 # plug "andreyorst/smarttab.kak" defer smarttab %{
     
 # } config %{
