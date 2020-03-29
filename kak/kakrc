@@ -51,13 +51,10 @@ plug "alexherbo2/connect.kak" do %{
 #     hook global WinSetOption filetype=(c|cpp) smarttab
 # }
 plug "andreyorst/powerline.kak" defer powerline %{
-    set-option global powerline_format 'powerline-format git bufname filetype mode_info line_column position'
-    set-option global powerline_separator curve
-    set-option global powerline_shorten_bufname short
-    powerline-toggle-module line_column
+    set-option global powerline_format 'git bufname line-column mode-info client session'
     powerline-theme gruvbox
 } config %{
-    # powerline-start #TODO it doesn't work
+    powerline-start
 }
 plug "eraserhd/kak-ansi"
 plug "lePerdu/kakboard" %{
