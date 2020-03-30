@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Broot
+Exec=broot %f
+Terminal=true
+Icon=broot.svg
+Keywords=br;
