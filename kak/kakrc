@@ -92,8 +92,8 @@ plug "occivink/kakoune-phantom-selection" %{
     map global insert <c-g> '<a-;>: phantom-group<ret><a-;><space>'
 }
 plug "alexherbo2/move-line.kak" %{
-    map global normal <a-up>   ': move-line-above<ret>;'
-    map global normal <a-down> ': move-line-below<ret>;'
+    map global normal <a-up>   ': move-line-above<ret>'
+    map global normal <a-down> ': move-line-below<ret>'
     map global insert <a-up>   '<a-;>: move-line-above<ret>'
     map global insert <a-down> '<a-;>: move-line-below<ret>'
 }
@@ -131,14 +131,14 @@ map global normal '#' ': comment-line<ret>'
 hook global InsertCompletionShow .* %{
     map window insert <tab>   '<c-n>'
     map window insert <s-tab> '<c-p>'
-    map window insert <esc>   '<c-o>'
-    map window insert <c-q>   '<c-o>'
+    # map window insert <esc>   '<c-o>'
+    # map window insert <c-q>   '<c-o>'
 }
 hook global InsertCompletionHide .* %{
     unmap window insert <tab>   '<c-n>'
     unmap window insert <s-tab> '<c-p>'
-    unmap window insert <esc>   '<c-o>'
-    unmap window insert <c-q>   '<c-o>'
+    # unmap window insert <esc>   '<c-o>'
+    # unmap window insert <c-q>   '<c-o>'
 }
 # automatic group of changes in insert
 #TODO
