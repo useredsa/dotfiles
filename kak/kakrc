@@ -14,7 +14,36 @@ def update-config %{
 source "%val{config}/plugins/plug.kak/rc/plug.kak"
 # Allow plug to manage itself. It's already been loaded.
 plug "andreyorst/plug.kak" noload
-plug "alexherbo2/kakoune-dracula-theme" theme
+
+# plug "andreyorst/smarttab.kak" defer smarttab %{
+
+# } config %{
+#     # these languages will use `expandtab' behavior
+#     hook global WinSetOption filetype=(rust|markdown|kak|lisp|scheme|sh|perl) expandtab
+#     # these languages will use `noexpandtab' behavior
+#     hook global WinSetOption filetype=(makefile|gas) noexpandtab
+#     # these languages will use `smarttab' behavior
+#     hook global WinSetOption filetype=(c|cpp) smarttab
+# }
+plug "andreyorst/powerline.kak" defer powerline %{
+    set-option global powerline_format 'git bufname line-column mode-info client session'
+    powerline-theme gruvbox
+} config %{
+    powerline-start
+}
+plug "andreyorst/tagbar.kak" defer "tagbar" %{
+    set-option global tagbar_sort false
+    set-option global tagbar_display_anon false
+    set-option global tagbar_size 40
+} config %{
+    # if you have wrap highlighter enamled in you configuration
+    # files it's better to turn it off for tagbar, using this hook:
+    hook global WinSetOption filetype=tagbar %{
+        remove-highlighter window/wrap
+        # you can also disable rendering whitespaces here, line numbers, and
+        # matching characters
+    }
+}
 plug "ul/kak-lsp" do %{
     cargo install --locked --force --path .
     ln -f target/release/kak-lsp ~/.local/bin/
@@ -31,41 +60,6 @@ plug "ul/kak-lsp" do %{
     #TODO add lsp_diagnostics_error_count to modeline
 }
 plug "occivink/kakoune-snippets"
-plug "alexherbo2/auto-pairs.kak" defer auto-pairs %{
-    set-option global auto-pairs ( ) { }
-}
-plug "alexherbo2/prelude.kak" do %{}
-plug "alexherbo2/connect.kak" do %{
-    ln -f "bin/kak-connect" "$HOME/bin/"
-    ln -f "share/applications/kakoune-connect.desktop" "$XDG_DATA_HOME/applications/"
-    curl "https://raw.githubusercontent.com/mawww/kakoune/master/doc/kakoune_logo.svg" --create-dirs -o "$XDG_DATA_HOME/icons/hicolor/scalable/apps/kakoune.svg"
-}
-# plug "andreyorst/smarttab.kak" defer smarttab %{
-    
-# } config %{
-#     # these languages will use `expandtab' behavior
-#     hook global WinSetOption filetype=(rust|markdown|kak|lisp|scheme|sh|perl) expandtab
-#     # these languages will use `noexpandtab' behavior
-#     hook global WinSetOption filetype=(makefile|gas) noexpandtab
-#     # these languages will use `smarttab' behavior
-#     hook global WinSetOption filetype=(c|cpp) smarttab
-# }
-plug "andreyorst/powerline.kak" defer powerline %{
-    set-option global powerline_format 'git bufname line-column mode-info client session'
-    powerline-theme gruvbox
-} config %{
-    powerline-start
-}
-plug "eraserhd/kak-ansi"
-plug "lePerdu/kakboard" %{
-    hook global WinCreate .* %{ kakboard-enable }
-}
-plug "https://gitlab.com/fsub/kakoune-mark" %{
-    map global normal <F8>   ': mark-word<ret>'
-    map global insert <F8>   '<a-;>: mark-word<ret>'
-    map global normal <s-F8> ': mark-clear<ret>'
-    map global insert <s-F8> '<a-;>: mark-clear<ret>'
-}
 plug "occivink/kakoune-phantom-selection" %{
     define-command -hidden -override -docstring "Creates a phantom group of selections" \
     phantom-group %{
@@ -91,11 +85,58 @@ plug "occivink/kakoune-phantom-selection" %{
     map global normal <c-g> ': phantom-group<ret><space>'
     map global insert <c-g> '<a-;>: phantom-group<ret><a-;><space>'
 }
+plug "caksoylar/kakoune-mysticaltutor" theme
+plug "alexherbo2/kakoune-dracula-theme" theme
+plug "alexherbo2/auto-pairs.kak" defer auto-pairs %[
+    set-option global auto-pairs ( ) { }
+] demand
+plug "alexherbo2/search-highlighter.kak"
+plug "alexherbo2/pager.kak" noload do %{
+    ln -f bin/kak-man-pager ~/.local/bin
+    ln -f bin/kak-pager ~/.local/bin
+}
+plug "alexherbo2/word-select.kak" config %{
+    map global normal w ': word-select-next-word<ret>'
+    map global normal <a-w> ': word-select-next-big-word<ret>'
+    map global normal b ': word-select-previous-word<ret>'
+    map global normal <a-b> ': word-select-previous-big-word<ret>'
+}
+plug "alexherbo2/terminal-mode.kak" config %{
+    map global user t ': enter-user-mode terminal<ret>' -docstring 'Terminal'
+    terminal-set global kitty kitty-terminal kitty-focus
+    declare-option int alpha 4
+} defer terminal-mode %{
+    #TODO
+    terminal-set global kitty kitty-terminal kitty-focus
+    echo 3
+    declare-option int alpha 3
+} demand
 plug "alexherbo2/move-line.kak" %{
     map global normal <a-up>   ': move-line-above<ret>'
     map global normal <a-down> ': move-line-below<ret>'
     map global insert <a-up>   '<a-;>: move-line-above<ret>'
     map global insert <a-down> '<a-;>: move-line-below<ret>'
+}
+plug "alexherbo2/prelude.kak"
+plug "alexherbo2/connect.kak" do %{
+    ln -f "bin/kak-desktop" "$HOME/bin/"
+    ln -f "bin/kak-shell" "$HOME/bin/"
+    XDG_DATA_HOME=${XDG_DATA_HOME:-~/.local/share}
+    ln -f "share/applications/kakoune-connect.desktop" "$XDG_DATA_HOME/applications/"
+    curl "https://raw.githubusercontent.com/mawww/kakoune/master/doc/kakoune_logo.svg" --create-dirs -o "$XDG_DATA_HOME/icons/hicolor/scalable/apps/kakoune.svg"
+} config %{
+    require-module connect-dmenu
+    require-module connect-dolphin
+}
+plug "eraserhd/kak-ansi"
+plug "lePerdu/kakboard" %{
+    hook global WinCreate .* %{ kakboard-enable }
+}
+plug "https://gitlab.com/fsub/kakoune-mark" %{
+    map global normal <F8>   ': mark-word<ret>'
+    map global insert <F8>   '<a-;>: mark-word<ret>'
+    map global normal <s-F8> ': mark-clear<ret>'
+    map global insert <s-F8> '<a-;>: mark-clear<ret>'
 }
 plug 'h-youhei/kakoune-surround' %[
    map global user <"> ': surround<ret>"' -docstring 'surround with ""'
@@ -103,7 +144,10 @@ plug 'h-youhei/kakoune-surround' %[
    map global user '(' ': surround<ret>(' -docstring 'surround with ()'
    map global user <{> ': surround<ret>{' -docstring 'surround with {}'
 ]
-
+plug "Delapouite/kakoune-text-objects" %{
+    text-object-map
+}
+plug 'Delapouite/kakoune-auto-percent'
 
 
 
@@ -151,15 +195,18 @@ define-command -override -hidden home-expansion %{
     # test does not just remove failing selections.
     eval -itersel %{ 
         try %{
-            exec -draft %{ <a-h><a-k>\A\h+.\z<ret> } # check that the preceeding characters are horizontal whitespaces
-            exec Gh # if the previous line does not fail, go to begining of line
+            # check that the preceeding characters are horizontal whitespaces
+            exec -draft %{ <a-h><a-k>\A\h+.\z<ret> }
+            # if the previous line does not fail, go to begining of line
+            exec Gh
         } catch %{
-            exec Gi # if it failed, go to first non blank character
+            # if it failed, go to first non blank character
+            exec Gi
         }
     }
 }
 map global insert <home>      '<esc>: home-expansion<ret>;i'
-map global insert <s-home>    '<esc>: home-expansion<ret>: enter-user-mode fixsel'
+map global insert <s-home>    '<esc>: home-expansion<ret>: enter-user-mode fixsel<ret>'
 map global normal <home>      ': home-expansion<ret>;'
 map global normal <s-home>    ': home-expansion<ret>'
 
@@ -383,4 +430,10 @@ evaluate-commands %sh{
     printf "map global user -docstring 'replace from clipboard' R '|%s<ret>'\n" "$paste"
 }
 
+# Auto Save for qutebrowser
+# ─────────────────────────
+hook global BufCreate ".*qutebrowser-editor.*" %{
+    hook buffer NormalIdle ".*" 'w'
+    hook buffer InsertIdle ".*" 'w'
+}
 
