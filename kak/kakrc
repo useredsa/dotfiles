@@ -119,8 +119,8 @@ plug "alexherbo2/move-line.kak" %{
 }
 plug "alexherbo2/prelude.kak"
 plug "alexherbo2/connect.kak" do %{
-    ln -f "bin/kak-desktop" "$HOME/bin/"
-    ln -f "bin/kak-shell" "$HOME/bin/"
+    ln -f "bin/kak-desktop" "$HOME/.local/bin/"
+    ln -f "bin/kak-shell" "$HOME/.local/bin/"
     XDG_DATA_HOME=${XDG_DATA_HOME:-~/.local/share}
     ln -f "share/applications/kakoune-connect.desktop" "$XDG_DATA_HOME/applications/"
     curl "https://raw.githubusercontent.com/mawww/kakoune/master/doc/kakoune_logo.svg" --create-dirs -o "$XDG_DATA_HOME/icons/hicolor/scalable/apps/kakoune.svg"

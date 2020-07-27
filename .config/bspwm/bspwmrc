@@ -2,7 +2,7 @@
 
 sxhkd &
 compton &
-nitrogen --set-scaled ~/Downloads/wallpaper3.jpg &
+nitrogen --set-scaled --random ~/Pictures/Wallpapers/ &
 setxkbmap us intl
 
 bspc monitor -d I II III IV

@@ -1,6 +1,6 @@
 # Application shortcuts
 super + Return
-	kitty
+	alacritty
 
 super + e
 	dolphin
