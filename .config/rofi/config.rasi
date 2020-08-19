@@ -1,0 +1,11 @@
+configuration {
+    width: 100;
+    lines: 1;
+    columns: 5;
+    location: 2;
+    monitor: "-2";
+    show-icons: true;
+    sort: true;
+    sorting-method: "fzf";
+    theme: "/usr/share/rofi/themes/gruvbox-dark.rasi";
+}

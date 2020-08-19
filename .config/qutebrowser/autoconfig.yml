@@ -14,6 +14,9 @@ settings:
         <Ctrl+Shift+Tab>: tab-prev
         <Ctrl+Tab>: tab-next
         <Ctrl+t>: set-cmd-text -s :open -t -r
+  content.notifications:
+    https://webchat.freenode.net: false
+    https://www.facebook.com: false
   content.register_protocol_handler:
     https://mail.google.com?extsrc=mailto&url=%25s: false
   editor.command:
@@ -50,6 +53,8 @@ settings:
       top: 1
   statusbar.position:
     global: bottom
+  tabs.new_position.unrelated:
+    global: next
   tabs.position:
     global: top
   tabs.show:

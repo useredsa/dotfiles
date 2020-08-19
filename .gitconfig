@@ -1,0 +1,5 @@
+[user]
+	email = emilio.dominguezs@um.es
+	name = useredsa
+[pull]
+	rebase = false

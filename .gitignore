@@ -5,4 +5,4 @@
 .config/qutebrowser/*
 !.config/qutebrowser/autoconfig.yml
 !.config/qutebrowser/config.py
-
+*.cf/session

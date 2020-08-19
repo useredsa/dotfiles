@@ -1,67 +1,104 @@
-
-# :config - Modify kakrc
-def config %{
-    edit ~/.config/kak/kakrc
-}
-#TODO restart
-def update-config %{
+set global startup_info_version 20200804 # Only show update messages post v2020.08.04
+def config -docstring %{ config: Edit kakrc } %{ edit ~/.config/kak/kakrc }
+def update-config -docstring %{ update-config: Reload kakoune with the current buffers } %{
     # source #TODO
 }
 
+
+
 # Plugin Management
-# –––––––––––––––––
-# Source plug.kak. The plugin manager.
-source "%val{config}/plugins/plug.kak/rc/plug.kak"
-# Allow plug to manage itself. It's already been loaded.
-plug "andreyorst/plug.kak" noload
+# ─────────────────
+source "%val{config}/plugins/plug.kak/rc/plug.kak"  # Source plug.kak. The plugin manager.
+plug "andreyorst/plug.kak" noload # Allow plug to manage itself. It's already been loaded.
 
-# plug "andreyorst/smarttab.kak" defer smarttab %{
 
-# } config %{
-#     # these languages will use `expandtab' behavior
-#     hook global WinSetOption filetype=(rust|markdown|kak|lisp|scheme|sh|perl) expandtab
-#     # these languages will use `noexpandtab' behavior
-#     hook global WinSetOption filetype=(makefile|gas) noexpandtab
-#     # these languages will use `smarttab' behavior
-#     hook global WinSetOption filetype=(c|cpp) smarttab
-# }
-plug "andreyorst/powerline.kak" defer powerline %{
-    set-option global powerline_format 'git bufname line-column mode-info client session'
-    powerline-theme gruvbox
-} config %{
-    powerline-start
-}
+
+# Extra Functionality plugins
+# ───────────────────────────
+plug "occivink/kakoune-snippets"
+plug "alexherbo2/prelude.kak"
+plug "useredsa/pager.kak" noload do %{ ln -f bin/kak-man-pager bin/kak-pager ~/.local/bin }
+plug "eraserhd/kak-ansi"
 plug "andreyorst/tagbar.kak" defer "tagbar" %{
-    set-option global tagbar_sort false
+    set-option global tagbar_sort         false
     set-option global tagbar_display_anon false
-    set-option global tagbar_size 40
+    set-option global tagbar_size         40
 } config %{
-    # if you have wrap highlighter enamled in you configuration
+    # if you have wrap highlighter enabled in you configuration
     # files it's better to turn it off for tagbar, using this hook:
-    hook global WinSetOption filetype=tagbar %{
-        remove-highlighter window/wrap
-        # you can also disable rendering whitespaces here, line numbers, and
-        # matching characters
-    }
+    hook global WinSetOption filetype=tagbar %{ remove-highlighter window/wrap }
 }
 plug "ul/kak-lsp" do %{
     cargo install --locked --force --path .
     ln -f target/release/kak-lsp ~/.local/bin/
 } config %{
-    # Activated filetypes
     hook global WinSetOption filetype=(c|cpp|latex) lsp-enable-window
     lsp-auto-hover-enable
     set global lsp_hover_anchor true
-    map -docstring 'Go to implementation' global normal <F12> ': lsp-implementation<ret>'
-    map -docstring 'Rename symbol'        global normal <F2>  ': lsp-rename-prompt<ret>'
-    map -docstring 'Lsp Menu'             global user m       ': lsp-code-actions<ret>'
-    map -docstring 'Next error'           global user n       ': lsp-find-error<ret>'
-    map -docstring 'Previous error'       global user p       ': lsp-find-error --previous<ret>'
-    #TODO add lsp_diagnostics_error_count to modeline
+    map global normal <F12> ': lsp-implementation<ret>'        -docstring 'Go to implementation'
+    map global normal <F2>  ': lsp-rename-prompt<ret>'         -docstring 'Rename symbol'
+    map global user   m     ': lsp-code-actions<ret>'          -docstring 'Lsp Menu'
+    map global user   n     ': lsp-find-error<ret>'            -docstring 'Next error'
+    map global user   p     ': lsp-find-error --previous<ret>' -docstring 'Previous error'
 }
-plug "occivink/kakoune-snippets"
+plug "alexherbo2/terminal-mode.kak" config %{
+    map global user t ': enter-user-mode terminal<ret>' -docstring 'Terminal'
+}
+plug "alexherbo2/explore.kak" defer connect-rofi %{
+    alias global explore-files rofi-files
+    alias global explore-buffers rofi-buffers
+}
+plug "alexherbo2/connect.kak" do %{ make install } config %{
+    require-module connect-dmenu
+    require-module connect-rofi
+    require-module connect-dolphin
+}
+
+
+
+# Custom mappings
+# ───────────────
+### Helper Functions
+##─────────────────
+define-command bam -params 4 -docstring %{
+    bam <scope> <key> <command> <insert_prefix>:
+    BinAry Map in normal and insert mode.
+    The given prefix is used before the command in insert mode.
+} %{
+    map "%arg{1}" normal "%arg{3}" "%arg{4}"
+    map "%arg{1}" insert "%arg{3}" "%arg{2}%arg{4}"
+}
+
+define-command home-expansion -hidden -docstring %{
+    home-expansion: expand to the begining of line/non blank depending on position
+} %{
+    eval -itersel %{ # Run each selection independently so that the
+        try %{       # test does not just remove failing selections.
+            # Check that the preceeding characters are horizontal whitespaces.
+            exec -draft %{ <a-h><a-k>\A\h+.\z<ret> }
+            exec Gh # If the previous line does not fail, go to begining of line.
+        } catch %{  # Othwerwise, go to first non blank character
+            exec Gi
+        }
+    }
+}
+
+define-command select-or-add-cursor -docstring %{
+    select a word under cursor, or add cursor on next occurrence of current selection
+} %{ execute-keys -save-regs '' %sh{
+    if [ $(expr $(echo $kak_selection | wc -m) - 1) -eq 1 ]; then
+        echo "<a-i>w*"
+    else
+        echo "*<s-n>"
+    fi
+}}
+
+## Shortcuts
+## ─────────
+# <c-g> - Creates/Removes a phantom group of selections
 plug "occivink/kakoune-phantom-selection" %{
-    define-command -hidden -override -docstring "Creates a phantom group of selections" \
+    face global PhantomSelection "default,rgba:72637216+g"
+        define-command -hidden -override -docstring "Creates a phantom group of selections" \
     phantom-group %{
         phantom-selection-add-selection
         map buffer normal <tab>   ': phantom-selection-iterate-next<ret>'
@@ -76,7 +113,7 @@ plug "occivink/kakoune-phantom-selection" %{
         phantom-selection-select-all
         phantom-selection-clear
         unmap buffer normal <tab>   ': phantom-selection-iterate-next<ret>'
-        map   buffer insert <tab>   '<tab>'
+          map buffer insert <tab>   '<tab>'
         unmap buffer normal <s-tab> ': phantom-selection-iterate-prev<ret>'
         unmap buffer insert <s-tab> '<esc>: phantom-selection-iterate-prev<ret>i'
         unmap buffer normal <c-g>   ': phantom-ungroup<ret>'
@@ -85,224 +122,121 @@ plug "occivink/kakoune-phantom-selection" %{
     map global normal <c-g> ': phantom-group<ret><space>'
     map global insert <c-g> '<a-;>: phantom-group<ret><a-;><space>'
 }
-plug "caksoylar/kakoune-mysticaltutor" theme
-plug "alexherbo2/kakoune-dracula-theme" theme
-plug "alexherbo2/auto-pairs.kak" defer auto-pairs %[
-    set-option global auto-pairs ( ) { }
-] demand
-plug "alexherbo2/search-highlighter.kak"
-plug "alexherbo2/pager.kak" noload do %{
-    ln -f bin/kak-man-pager ~/.local/bin
-    ln -f bin/kak-pager ~/.local/bin
-}
-plug "alexherbo2/word-select.kak" config %{
-    map global normal w ': word-select-next-word<ret>'
-    map global normal <a-w> ': word-select-next-big-word<ret>'
-    map global normal b ': word-select-previous-word<ret>'
-    map global normal <a-b> ': word-select-previous-big-word<ret>'
-}
-plug "alexherbo2/terminal-mode.kak" config %{
-    map global user t ': enter-user-mode terminal<ret>' -docstring 'Terminal'
-    terminal-set global kitty kitty-terminal kitty-focus
-    declare-option int alpha 4
-} defer terminal-mode %{
-    #TODO
-    terminal-set global kitty kitty-terminal kitty-focus
-    echo 3
-    declare-option int alpha 3
-} demand
+
+bam global ''      <c-q>    <esc>                         # <c-q> - Closer escape key
+bam global '<a-;>' <c-e>    ': e '                        # <c-e> - Edit file
+bam global '<a-;>' <c-E>    ': b '                        # <c-E> - Change buffer
+bam global '<a-;>' <c-w>    ': db<ret>'                   # <c-w> - Close buffer
+bam global '<a-;>' <c-s>    ': w<ret>'                    # <c-s> - Save file
+map global normal   '#'     ': comment-line<ret>'         # <#>   - Comment line(s)
+map global normal  '<a-#>'  ': comment-block<ret>'        # <a-#> - Comment block(s)
+bam global '<esc>' <c-d>    ': select-or-add-cursor<ret>' # <c-d> - Auto select equal text
+map global normal  <home>   ': home-expansion<ret>;'
+map global insert  <home>   '<esc>: home-expansion<ret>;i'
+bam global <esc>   <s-home> ': home-expansion<ret>'
+map global normal    m    '<a-i>'
 plug "alexherbo2/move-line.kak" %{
-    map global normal <a-up>   ': move-line-above<ret>'
-    map global normal <a-down> ': move-line-below<ret>'
-    map global insert <a-up>   '<a-;>: move-line-above<ret>'
-    map global insert <a-down> '<a-;>: move-line-below<ret>'
+    bam global '<a-;>' <a-up>   ': move-line-above<ret>'  # <a-up>   - Move line up
+    bam global '<a-;>' <a-down> ': move-line-below<ret>'  # <a-down> - Move line down
 }
-plug "alexherbo2/prelude.kak"
-plug "alexherbo2/connect.kak" do %{
-    ln -f "bin/kak-desktop" "$HOME/.local/bin/"
-    ln -f "bin/kak-shell" "$HOME/.local/bin/"
-    XDG_DATA_HOME=${XDG_DATA_HOME:-~/.local/share}
-    ln -f "share/applications/kakoune-connect.desktop" "$XDG_DATA_HOME/applications/"
-    curl "https://raw.githubusercontent.com/mawww/kakoune/master/doc/kakoune_logo.svg" --create-dirs -o "$XDG_DATA_HOME/icons/hicolor/scalable/apps/kakoune.svg"
-} config %{
-    require-module connect-dmenu
-    require-module connect-dolphin
-}
-plug "eraserhd/kak-ansi"
-plug "lePerdu/kakboard" %{
-    hook global WinCreate .* %{ kakboard-enable }
-}
-plug "https://gitlab.com/fsub/kakoune-mark" %{
-    map global normal <F8>   ': mark-word<ret>'
-    map global insert <F8>   '<a-;>: mark-word<ret>'
-    map global normal <s-F8> ': mark-clear<ret>'
-    map global insert <s-F8> '<a-;>: mark-clear<ret>'
-}
-plug 'h-youhei/kakoune-surround' %[
-   map global user <"> ': surround<ret>"' -docstring 'surround with ""'
-   map global user <'> ": surround<ret>'" -docstring "surround with ''"
-   map global user '(' ': surround<ret>(' -docstring 'surround with ()'
-   map global user <{> ': surround<ret>{' -docstring 'surround with {}'
-]
-plug "Delapouite/kakoune-text-objects" %{
-    text-object-map
-}
-plug 'Delapouite/kakoune-auto-percent'
 
-
-
-# General Short-cuts and custom mappings
-# ––––––––––––––––––––––––––––––––––––––
-# <c-q> - Return to normal mode
-map global insert <c-q> <esc>
-map global prompt <c-q> <esc>
-# <c-e> - Edit file, <c-w> - Close buffer
-map global normal <c-e> ': edit '
-map global insert <c-e> '<esc>: edit '
-map global normal <c-E> ': buffer '
-map global insert <c-E> '<esc>: buffer '
-map global normal <c-w> ': db<ret>'
-map global insert <c-w> '<esc>: db<ret>'
-# <c-s> - Save file
-map global normal <c-s> ': w<ret>'
-map global insert <c-s> '<a-;>: w<ret>'
-map global  user  <c-s> '<c-s>'
-# <c-p> - Open prompt in insert
-map global insert <c-p> '<a-;>:'
-# <#> Comments lines
-map global normal '#' ': comment-line<ret>'
-# <tab>/<s-tab> for completion selection
-hook global InsertCompletionShow .* %{
+hook global InsertCompletionShow .* %{ # <tab>/<s-tab> - Loop trhough completion selection
     map window insert <tab>   '<c-n>'
     map window insert <s-tab> '<c-p>'
-    # map window insert <esc>   '<c-o>'
-    # map window insert <c-q>   '<c-o>'
+    map window insert <esc>   '<c-o>'
 }
 hook global InsertCompletionHide .* %{
     unmap window insert <tab>   '<c-n>'
     unmap window insert <s-tab> '<c-p>'
-    # unmap window insert <esc>   '<c-o>'
-    # unmap window insert <c-q>   '<c-o>'
+    unmap window insert <esc>   '<c-o>'
 }
-# automatic group of changes in insert
-#TODO
 
-# Movement
-# ––––––––––––––––––––––––––––––––––––––
-# Home moves/expand to the begining of line/non blank depending on position
-define-command -override -hidden home-expansion %{
-    # Run each selection independently so that the
-    # test does not just remove failing selections.
-    eval -itersel %{ 
-        try %{
-            # check that the preceeding characters are horizontal whitespaces
-            exec -draft %{ <a-h><a-k>\A\h+.\z<ret> }
-            # if the previous line does not fail, go to begining of line
-            exec Gh
-        } catch %{
-            # if it failed, go to first non blank character
-            exec Gi
-        }
-    }
+plug 'https://gitlab.com/Screwtapello/kakoune-inc-dec' %{
+    map global normal <plus>  ': inc-dec-modify-numbers + %val{count}<ret>'  # <plus>  - Increment number
+    map global normal <minus> ': inc-dec-modify-numbers - %val{count}<ret>'  # <minus> - Decrement number
 }
-map global insert <home>      '<esc>: home-expansion<ret>;i'
-map global insert <s-home>    '<esc>: home-expansion<ret>: enter-user-mode fixsel<ret>'
-map global normal <home>      ': home-expansion<ret>;'
-map global normal <s-home>    ': home-expansion<ret>'
 
-# Ctrl for moving objects in insert mode
-map global insert <c-left>    '<a-;>b<a-;>;'
-map global insert <c-right>   '<a-;>w<a-;>;'
-map global insert <c-up>      '<a-;>[p<a-;>;'
-map global insert <c-down>    '<a-;>]p<a-;>;'
-map global normal <c-left>    'b;'
-map global normal <c-right>   'w;'
-map global normal <c-up>      '[p;'
-map global normal <c-down>    ']p;'
+plug "https://gitlab.com/fsub/kakoune-mark" %{
+    bam global '<a-;>' <F8>   ': mark-word<ret>'                             # <F8>   - Mark(highlight) word under the cursor
+    bam global '<a-;>' <a-F8> ': mark-pattern toggle "%val{selection}<ret>"' # <a-F8> - Mark(highlight) current selection
+    bam global '<a-;>' <s-F8> ': mark-clear<ret>'                            # <s-F8> - Erase mark highlighters
+}
 
-# Selection
-# ––––––––––––––––––––––––––––––––––––––
-declare-user-mode fixsel
-map global fixsel i 'i'
-map global fixsel a 'a'
-map global fixsel c 'c'
-map global fixsel <backspace> 'c'
-map global fixsel y 'y'
-map global fixsel d 'd'
-map global fixsel m 'm'
 
-# map global fixsel H 'H'
-# map global fixsel L 'L'
-# map global fixsel K 'K'
-# map global fixsel J 'J'
-map global fixsel <s-left>  'H: enter-user-mode fixsel<ret>'
-map global fixsel <s-right> 'L: enter-user-mode fixsel<ret>'
-map global fixsel <s-up>    'K: enter-user-mode fixsel<ret>'
-map global fixsel <s-down>  'J: enter-user-mode fixsel<ret>'
-# map global fixsel B 'B'
-# map global fixsel W 'W'
-# map global fixsel { '{'
-# map global fixsel } '}'
-map global fixsel <c-s-left>  'B: enter-user-mode fixsel<ret>'
-map global fixsel <c-s-right> 'W: enter-user-mode fixsel<ret>'
-map global fixsel <c-s-up>    '{p: enter-user-mode fixsel<ret>'
-map global fixsel <c-s-down>  '}p: enter-user-mode fixsel<ret>'
-map global fixsel <s-home>    ': home-expansion<ret>: enter-user-mode fixsel<ret>'
-map global fixsel <s-end>     'Gl: enter-user-mode fixsel<ret>'
-map global fixsel <"> ': surround<ret>"' -docstring 'surround with ""'
-map global fixsel <'> ": surround<ret>'" -docstring "surround with ''"
-map global fixsel <(> ': surround<ret>(' -docstring 'surround with ()'
-map global fixsel <{> ': surround<ret>{' -docstring 'surround with {}'
+# User Mode(s)
+# ────────────
+plug 'h-youhei/kakoune-surround' %|
+    declare-user-mode surround
+    map global surround s   ': surround<ret>'                 -docstring 'surround'
+    map global surround c   ': change-surround<ret>'          -docstring 'change'
+    map global surround d   ': delete-surround<ret>'          -docstring 'delete'
+    map global surround t   ': select-surrounding-tag<ret>'   -docstring 'select tag'
+    map global surround <"> ': surround<ret>"'                -docstring 'surround with ""'
+    map global surround <'> ": surround<ret>'"                -docstring "surround with ''"
+    map global surround <(> ': surround<ret>('                -docstring 'surround with ()'
+    map global surround <{> ': surround<ret>{'                -docstring 'surround with {}'
+    map global surround <[> ': surround<ret>{'                -docstring 'surround with {}'
+    map global user s       ': enter-user-mode surround<ret>' -docstring 'Surround mode'
+|
+plug "danr/kakoune-easymotion" %{
+    set global em_jumpchars "0123456789abcdefghijklmnopqrstuvwxyz"
+    map global goto j '<esc>: easy-motion-j<ret>' -docstring "following lines"
+    map global goto k '<esc>: easy-motion-k<ret>' -docstring "previous lines"
+    map global goto w '<esc>: easy-motion-w<ret>' -docstring "following words"
+    map global goto b '<esc>: easy-motion-b<ret>' -docstring "previous words"
+}
 
-map global insert <s-left>    '<esc>H: enter-user-mode fixsel<ret>'
-map global insert <s-right>   '<esc>L: enter-user-mode fixsel<ret>'
-map global insert <s-up>      '<esc>K: enter-user-mode fixsel<ret>'
-map global insert <s-down>    '<esc>J: enter-user-mode fixsel<ret>'
-map global insert <c-s-left>  '<esc>B: enter-user-mode fixsel<ret>'
-map global insert <c-s-right> '<esc>W: enter-user-mode fixsel<ret>'
-map global insert <c-s-up>    '<esc>{p: enter-user-mode fixsel<ret>'
-map global insert <c-s-down>  '<esc>}p: enter-user-mode fixsel<ret>'
-map global normal <c-s-left>  'B: enter-user-mode fixsel<ret>'
-map global normal <c-s-right> 'W: enter-user-mode fixsel<ret>'
-map global normal <c-s-up>    '{p: enter-user-mode fixsel<ret>'
-map global normal <c-s-down>  '}p: enter-user-mode fixsel<ret>'
 
-# <c-d> Select occurences of current word
-define-command -override -docstring "select a word under cursor, or add cursor on next occurrence of current selection" \
-select-or-add-cursor %{ execute-keys -save-regs '' %sh{
-    if [ $(expr $(echo $kak_selection | wc -m) - 1) -eq 1 ]; then
-        echo "<a-i>w*"
-    else
-        echo "*<s-n>"
-    fi
-}}
-map global normal '<c-d>' ': select-or-add-cursor<ret>' -docstring "Select current word (or next occurrence)" 
-map global insert '<c-d>' '<esc>: select-or-add-cursor<ret>' -docstring "Select current word (or next occurrence)"
-# Tabulation Configuration
+
+# Editor mechanics/behaviour
+# ──────────────────────────
+plug "alexherbo2/auto-pairs.kak" defer auto-pairs %[
+    set-option global auto-pairs ( ) { }
+] demand
+plug 'Delapouite/kakoune-auto-percent'
+plug "lePerdu/kakboard" %{ hook global WinCreate .* %{ kakboard-enable } }
 set global tabstop 4
-# Notes highlighting for code
-add-highlighter global/ regex '(\b|%|//|#)? ?(TODO|FIXME|XXX|NOTE)\b' 0:default+rb
+plug "andreyorst/smarttab.kak" defer smarttab %{
+    set global softtabstop 4
+} config %{
+    hook global WinSetOption filetype=(c|cpp|asciidoctor|rust|markdown|kak|sh|perl) expandtab
+    hook global WinSetOption filetype=(makefile|gas) noexpandtab
+    hook global WinSetOption filetype=() smarttab
+}
+plug "alexherbo2/word-select.kak" config %{
+    map global normal w     ': word-select-next-word<ret>'
+    map global normal <a-w> ': word-select-next-big-word<ret>'
+    map global normal b     ': word-select-previous-word<ret>'
+    map global normal <a-b> ': word-select-previous-big-word<ret>'
+}
+plug "Delapouite/kakoune-text-objects"
+
 
 
 # User Experience
-# –––––––––––––––
-colorscheme gruvbox
+# ───────────────
+plug "caksoylar/kakoune-mysticaltutor"  theme
+plug "alexherbo2/kakoune-dracula-theme" theme
+colorscheme gruvbox-mod
+
+add-highlighter global/ show-matching
 add-highlighter global/ number-lines
-# set -add global autoinfo normal
+add-highlighter global/ regex '(\b|%|//|#)? ?(TODO|FIXME|XXX|NOTE)\b' 0:default+rb
+plug "alexherbo2/search-highlighter.kak"
+
 
 
 # File Specific
-# ––––––––––––––_
-hook global BufCreate .*\.(tex|latex) %{
-    set-option buffer filetype latex
+# ─────────────
+hook global BufCreate .*\.(markdown|md|mkd) %{ set-option buffer filetype markdown }
+hook global BufCreate .*\.(latex) %{ set-option buffer filetype tex }
+
+hook global WinSetOption filetype=(c|cpp|tex|markdown) %{
+    add-highlighter window/ wrap -indent -width 95 -marker …
 }
 
-hook global WinSetOption filetype=latex %{
-    colorscheme gruvbox
-    # Line Wrapping
-    add-highlighter window/ wrap -indent -width 95
-    define-command -override -docstring "compile latex" \
-    compile2pdf %{ echo %sh{
+hook global WinSetOption filetype=tex %{
+    define-command compile2pdf -override -docstring "compile latex" %{ echo %sh{
         target=$kak_buffile
         dir="$(dirname $target)"
         cd "$dir"
@@ -312,72 +246,42 @@ hook global WinSetOption filetype=latex %{
         printf "Compiling %s to %s\n" "$target" "out"
         texfot pdflatex -halt-on-error -output-dir "out" "$target"
 	}}
-    # Compile on save
-    # hook window BufWritePost .* %{ %sh{ pdflatex header.tex } }
-    map window normal '<c-w>' ': compile2pdf<ret>'
 
-    # Text structure markup
-    # add-highlighter window/ regex '^[^\n]*\\subsection[^\n]*' '0:default,rgb:666666'
-}
-
-hook global BufCreate .*\.(markdown|md|mkd) %{
-    set-option buffer filetype markdown
-}
-
-hook global WinSetOption filetype=markdown %{
-    # Line Wrapping
-    add-highlighter window/ wrap -indent -width 95
-}
-
-hook global WinDisplay .*\.(l) %{
-    remove-highlighter shared/c/string
-}
-
-hook global WinSetOption filetype=(c|cpp) %{
-    add-highlighter window/ wrap -indent -width 95
+    # hook window BufWritePost .* %{ %sh{ pdflatex header.tex } } # Compile on save
+    bam window '<a-;>' <c-w> ': compile2pdf<ret>'
 }
 
 hook global WinSetOption filetype=cf %{
-    ansi-render
-    hook -group ansi buffer BufReadFifo .* %{
-        evaluate-commands -draft %sh{
+    hook -group ansi buffer BufReadFifo .* %{ eval -draft %sh{
             printf "select %s\n" "$kak_hook_param"
             printf "execute-keys 's\\\\r\\\\n<ret>hd<space>'"
         }
     }
-    hook -group ansi buffer BufReadFifo .* %{
-        evaluate-commands -draft %sh{
-            printf "select %s\n" "$kak_hook_param"
-            printf "execute-keys 'Z<a-:><a-;>gH<a-z>u'\n"
-            printf "ansi-render-selection\n"
-        }
-    }
 }
 
-hook global WinDisplay .*/cpc/.*\.cpp %{
-    define-command -override -params .. \
-    -docstring %{
-        cf [<arguments>]: cf utility wrapper
+hook global WinDisplay .*/ICPCtraining/.*\.cpp %{
+    define-command cf -override -params .. -docstring %{
+        cf [<arguments>]: cf-tool utility wrapper
         All the optional arguments are forwarded to the cf utility
-     } cf %{ evaluate-commands %sh{
-     output=$(mktemp -d "${TMPDIR:-/tmp}"/kak-cf.XXXXXXXX)/fifo
-     discard=$(mktemp -d "${TMPDIR:-/tmp}"/kak-cf.XXXXXXXX)/discard
-     mkfifo ${output}
-     command="cf $@"
-     ( script -efq -c "$command" ${discard} >${output} & ) >/dev/null 2>&1 </dev/null
+    } %{ eval %sh{
+        output=$(mktemp -d "${TMPDIR:-/tmp}"/kak-cf.XXXXXXXX)/fifo
+        discard=$(mktemp -d "${TMPDIR:-/tmp}"/kak-cf.XXXXXXXX)/discard
+        mkfifo "${output}"
 
-         printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
-               edit! -fifo ${output} -scroll *cf*
-               set-option buffer filetype cf
-               set-option buffer make_current_error_line 0
-               hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r $(dirname ${output}) } }
-               }"
-     }}
+        command="cf $@"
+        ( script -efq -c "$command" ${discard} >${output} & ) >/dev/null 2>&1 </dev/null
 
-    define-command -override \
-    -docstring %{
-        new-test-case: add a new testcase
-    } new-test-case %{ evaluate-commands %sh{
+        printf %s\\n "evaluate-commands -try-client  '$kak_opt_toolsclient' %{
+           edit! -fifo ${output} -scroll *stdin-1024*
+           set-option buffer filetype cf
+           set-option buffer make_current_error_line 0
+           hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r $(dirname ${output}) } }
+        }"
+    }}
+
+    define-command new-test-case -override -docstring %{
+        new-test-case: add a new testcase for cf-tool
+    } %{ evaluate-commands %sh{
         i=1
         while true; do
             # printf "in$i.txt\n"
@@ -387,47 +291,23 @@ hook global WinDisplay .*/cpc/.*\.cpp %{
             i=$((i+1))
         done
 
-        input="in$i.txt"
-        output="ans$i.txt"
         printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
-            edit! ${output}
-            edit! ${input}
-            }"
+            edit! ans$i.txt
+            edit! in$i.txt
+        }"
     }}
 
-    map buffer normal '<c-w>' ': cf test %val{buffile}<ret>'
-    map buffer insert '<c-w>' '<a-;>: cf test %val{buffile}<ret>'
-    map buffer normal '<F1>'  ': new-test-case<ret>'
-    map buffer insert '<F1>'  '<a-;>: new-test-case<ret>'
-}
+    define-command import-library -override -params .. -docstring %{
+        import-library [<switches>]: Choose a library with rofi and insert it.
+        --strip	remove top definitions and main
+        --editor	open the selected file
+    } %{
+        execute-keys "!/home/useredsa/Desktop/cpc/useful_codes/lib_query.sh %arg{@}<ret>"
+    }
 
-# Highlight the word under the cursor
-# ───────────────────────────────────
-declare-option -hidden regex curword
-set-face global CurWord default,rgb:4a4a4a
-hook global NormalIdle .* %{
-    eval -draft %{ try %{
-        exec <space><a-i>w <a-k>\A\w+\z<ret>
-        set-option buffer curword "\b\Q%val{selection}\E\b"
-    } catch %{
-        set-option buffer curword ''
-    } }
-}
-add-highlighter global/ dynregex '%opt{curword}' 0:CurWord
-
-
-# System clipboard handling
-# ─────────────────────────
-evaluate-commands %sh{
-    case $(uname) in
-        Linux) copy="xclip -i"; paste="xclip -o" ;;
-        Darwin)  copy="pbcopy"; paste="pbpaste" ;;
-    esac
-
-    printf "map global user -docstring 'paste (after) from clipboard' p '!%s<ret>'\n" "$paste"
-    printf "map global user -docstring 'paste (before) from clipboard' P '<a-!>%s<ret>'\n" "$paste"
-    printf "map global user -docstring 'yank to clipboard' y '<a-|>%s<ret>:echo -markup %%{{Information}copied selection to X11 clipboard}<ret>'\n" "$copy"
-    printf "map global user -docstring 'replace from clipboard' R '|%s<ret>'\n" "$paste"
+    bam buffer '<a-;>' <c-w> ': cf test %val{buffile}<ret>' 
+    bam buffer '<a-;>' <F1>  ': new-test-case<ret>'         
+    bam buffer '<a-;>' <F3>  ': import-library --strip<ret>'
 }
 
 # Auto Save for qutebrowser
@@ -436,4 +316,25 @@ hook global BufCreate ".*qutebrowser-editor.*" %{
     hook buffer NormalIdle ".*" 'w'
     hook buffer InsertIdle ".*" 'w'
 }
+
+#TODO con shift se entra en un modo que es extender
+# Automatic group of changes in insert mode
+declare-option -hidden int last_grouping
+declare-option int grouping_delay 4
+hook global ModeChange ".*:insert" %{
+    set buffer last_grouping %sh{ date +%s }
+}
+# hook global InsertChar "\s" %{ eval %sh{
+#     if [ $(($kak_opt_last_grouping + $kak_opt_grouping_delay)) -le $(date +%s) ]; then
+#         printf "set buffer last_grouping $(date +%s)\n"
+#         printf "exec <c-u>\n"
+#     fi
+# }}
+
+# Source a local project kak config if it exists
+# Make sure it is set as a kak filetype
+hook global BufCreate (.*/)?(\.kakrc\.local) %{
+    set-option buffer filetype kak
+}
+try %{ source .kakrc.local }
 
