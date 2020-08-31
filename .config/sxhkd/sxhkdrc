@@ -12,7 +12,7 @@ super + F5
 
 # Run menu
 super + p
-	rofi -show run # -monitor -5
+	rofi -show run -monitor -5
 
 # Open a terminal
 super + Return
@@ -31,11 +31,11 @@ super + m; t
 
 # Discord
 super + m; d
-	bspc-toggle-visibility.sh Discord discord --state fullscreen
+	bspc-toggle-visibility.sh discord discord --state fullscreen
 
 # Terminal
 super + space
-	bspc-toggle-visibility.sh ScratchTerm "alacritty --class Alacritty,ScratchTerm"
+	export ALTPS1='[\d \t \W]\$ ' ; bspc-toggle-visibility.sh ScratchTerm "alacritty --class Alacritty,ScratchTerm -e bash"
 
 
 
@@ -46,8 +46,12 @@ super + space
 ## -------
 
 # Quit/Restart bspwm
-shift + super + {q,r}
+super + shift + {q,r}
 	bspc {quit,wm -r}
+
+# Increment/Decrement window gaps
+super + F3: {equal,minus}
+    bspc config window_gap $(($(bspc config window_gap) {+,-} 1))
 
 ## Function Menus
 ## --------------
@@ -55,15 +59,15 @@ shift + super + {q,r}
 # Help Menu
 super + F1
 	awk '/^[a-z]/ && last \{print "<small>",$0,"\t",last,"</small>"\} \{last=""\} /^#/\{last=$0\}' \
-	/home/useredsa/.config/sxhkd/sxhkdrc | \
-	column -t -s $'\t' | \
+	/home/useredsa/.config/sxhkd/sxhkdrc |                                       \
+	column -t -s $'\t' |                                                         \
 	rofi -dmenu -i -markup-rows -no-show-icons -monitor -5 -lines 5 -columns 1 | \
 	grep -oE -e 'super[^#]*' | tr -d ' ' | tr ';' ' ' | xargs xdotool key
 
 # Layout Menu
 super + F2
 	printf "tall\nrtall\nwide\nrwide\neven\ntiled\nmonocle\n" | \
-	rofi -dmenu -monitor -5 -lines 1 -columns 7 | \
+	rofi -dmenu -monitor -5 -lines 1 -columns 7 |               \
 	xargs bsp-layout set
 
 ## Window
@@ -79,7 +83,11 @@ super + {F4,shift + F4}
 
 # Focus last window
 super + Tab
-	bspc node -f last.local
+    bspc node -f last.local
+    # rofi -show window -monitor -5 -selected-row 2                                    \
+    # -kb-accept-entry '!Super-Tab,!Super+Super_L'    -kb-cancel 'Super+Escape,Escape' \
+    # -kb-row-up 'Super+ISO_Left_Tab,Super+Shift+Tab' -kb-row-down 'Super+Tab'
+    # https://github.com/davatorium/rofi/issues/38
 
 # Move to/Exchange position with an adjacent window
 super + {_,shift + }{h,j,k,l}

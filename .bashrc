@@ -18,8 +18,12 @@ if [ "$(cat /etc/hostname)" != "Server000" ]; then
     shopt -s checkwinsize
 fi
 
-# Prompt: Kakoune's connect plugin prompt + usual bash prompt
+# Prompt: My support for starting terminals with different prompts.
 PS1='[\u@\h \W]\$ '
+if [ -n "$ALTPS1" ]; then
+    PS1="$ALTPS1"
+fi
+# Prompt: Kakoune's connect plugin prompt + usual bash prompt
 if [ -e ~/.local/share/kak/connect/prompt ]; then
     PS1="\$(~/.local/share/kak/connect/prompt)$PS1"
 fi
@@ -40,5 +44,8 @@ alias myg++="g++ -O2 -Wall -std=c++17"
 alias ks="kak-shell"
 alias o="xdg-open"
 alias less="$PAGER"
-alias batstat="upower -i $(upower -e | grep BAT) | grep -E \"state|time (to\ full|to\ empty)|percentage\""
+# Add a battery status command if upower is installed
+if which upower 2>/dev/null 1>&2 ; then
+    alias batstat="upower -i $(upower -e | grep BAT) | grep -E \"state|time (to\ full|to\ empty)|percentage\""
+fi
 

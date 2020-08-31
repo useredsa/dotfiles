@@ -13,6 +13,35 @@ plug "andreyorst/plug.kak" noload # Allow plug to manage itself. It's already be
 
 
 
+# User Experience
+# ───────────────
+set-option global scrolloff 1,5
+plug "caksoylar/kakoune-mysticaltutor"  theme
+plug "alexherbo2/kakoune-dracula-theme" theme
+def -override colorscheme-gruvbox-alpha %{
+    colorscheme gruvbox-mod
+    set-face global PrimarySelection   "%opt{transparentfg},%opt{alpha_blue}"
+    set-face global SecondarySelection "%opt{alpha_fg},%opt{alpha_blue}"
+}
+def -override colorscheme-gruvbox-transparent %{
+    # colorscheme-gruvbox-alpha
+    colorscheme gruvbox-mod
+    set-face global Default            "%opt{fg}"
+    set-face global PrimarySelection   "%opt{alpha_fg},%opt{blue}"
+    set-face global SecondarySelection "%opt{alpha_fg},%opt{blue}"
+    set-face global StatusLine         "%opt{fg}"
+    set-face global BufferPadding      "%opt{bg2}"
+}
+colorscheme-gruvbox-transparent
+
+
+add-highlighter global/ show-matching
+add-highlighter global/ number-lines
+add-highlighter global/ regex '(\b|%|//|#)? ?(TODO|FIXME|XXX|NOTE)\b' 0:default+rb
+plug "alexherbo2/search-highlighter.kak"
+
+
+
 # Extra Functionality plugins
 # ───────────────────────────
 plug "occivink/kakoune-snippets"
@@ -28,21 +57,15 @@ plug "andreyorst/tagbar.kak" defer "tagbar" %{
     # files it's better to turn it off for tagbar, using this hook:
     hook global WinSetOption filetype=tagbar %{ remove-highlighter window/wrap }
 }
-plug "ul/kak-lsp" do %{
-    cargo install --locked --force --path .
-    ln -f target/release/kak-lsp ~/.local/bin/
-} config %{
+plug "ul/kak-lsp" config %{
     hook global WinSetOption filetype=(c|cpp|latex) lsp-enable-window
     lsp-auto-hover-enable
     set global lsp_hover_anchor true
-    map global normal <F12> ': lsp-implementation<ret>'        -docstring 'Go to implementation'
-    map global normal <F2>  ': lsp-rename-prompt<ret>'         -docstring 'Rename symbol'
-    map global user   m     ': lsp-code-actions<ret>'          -docstring 'Lsp Menu'
-    map global user   n     ': lsp-find-error<ret>'            -docstring 'Next error'
-    map global user   p     ': lsp-find-error --previous<ret>' -docstring 'Previous error'
+    lsp-inlay-diagnostics-enable global
+    map global user l ': enter-user-mode lsp<ret>' -docstring 'Lsp mode'
 }
 plug "alexherbo2/terminal-mode.kak" config %{
-    map global user t ': enter-user-mode terminal<ret>' -docstring 'Terminal'
+    map global user t ': enter-user-mode terminal<ret>' -docstring 'Terminal mode'
 }
 plug "alexherbo2/explore.kak" defer connect-rofi %{
     alias global explore-files rofi-files
@@ -97,7 +120,8 @@ define-command select-or-add-cursor -docstring %{
 ## ─────────
 # <c-g> - Creates/Removes a phantom group of selections
 plug "occivink/kakoune-phantom-selection" %{
-    face global PhantomSelection "default,rgba:72637216+g"
+    # face global PhantomSelection "default,rgba:72637216+g"
+    face global PhantomSelection "%opt{alpha_fg},%opt{alpha_purple}"
         define-command -hidden -override -docstring "Creates a phantom group of selections" \
     phantom-group %{
         phantom-selection-add-selection
@@ -130,25 +154,38 @@ bam global '<a-;>' <c-w>    ': db<ret>'                   # <c-w> - Close buffer
 bam global '<a-;>' <c-s>    ': w<ret>'                    # <c-s> - Save file
 map global normal   '#'     ': comment-line<ret>'         # <#>   - Comment line(s)
 map global normal  '<a-#>'  ': comment-block<ret>'        # <a-#> - Comment block(s)
-bam global '<esc>' <c-d>    ': select-or-add-cursor<ret>' # <c-d> - Auto select equal text
+bam global <esc>   <c-d>    ': select-or-add-cursor<ret>' # <c-d> - Auto select equal text
 map global normal  <home>   ': home-expansion<ret>;'
 map global insert  <home>   '<esc>: home-expansion<ret>;i'
 bam global <esc>   <s-home> ': home-expansion<ret>'
-map global normal    m    '<a-i>'
+map global normal    p      <a-p>                         # Switch p and <a-p>
+map global normal   <a-p>   p
+map global normal   <a-P>   P
+map global normal    P      <a-P>
+map global normal    ⓘ      <tab>
+map global normal    t      <a-i>                         # t        - Trim Object
+map global normal  <tab>    )                             # <tab>    - Rotate selections forward
+map global normal  <s-tab>  (                             # <s-tab>  - Rotate selections backwards
 plug "alexherbo2/move-line.kak" %{
     bam global '<a-;>' <a-up>   ': move-line-above<ret>'  # <a-up>   - Move line up
     bam global '<a-;>' <a-down> ': move-line-below<ret>'  # <a-down> - Move line down
 }
+plug "useredsa/dynamic-matching.kak" %{
+    dynamic-matching-dmatch-conf
+    map global normal m ': enter-user-mode dmatch<ret>'
+    map global normal M ': enter-user-mode Dmatch<ret>'
+    map global user   m ': enter-user-mode -lock dmatch<ret>' -docstring "dmatch mode"
+}
 
 hook global InsertCompletionShow .* %{ # <tab>/<s-tab> - Loop trhough completion selection
-    map window insert <tab>   '<c-n>'
-    map window insert <s-tab> '<c-p>'
-    map window insert <esc>   '<c-o>'
+    map window insert <tab>   <c-n>
+    map window insert <s-tab> <c-p>
+    map window insert <esc>   <c-o>
 }
 hook global InsertCompletionHide .* %{
-    unmap window insert <tab>   '<c-n>'
-    unmap window insert <s-tab> '<c-p>'
-    unmap window insert <esc>   '<c-o>'
+    unmap window insert <tab>   <c-n>
+    unmap window insert <s-tab> <c-p>
+    unmap window insert <esc>   <c-o>
 }
 
 plug 'https://gitlab.com/Screwtapello/kakoune-inc-dec' %{
@@ -158,13 +195,17 @@ plug 'https://gitlab.com/Screwtapello/kakoune-inc-dec' %{
 
 plug "https://gitlab.com/fsub/kakoune-mark" %{
     bam global '<a-;>' <F8>   ': mark-word<ret>'                             # <F8>   - Mark(highlight) word under the cursor
-    bam global '<a-;>' <a-F8> ': mark-pattern toggle "%val{selection}<ret>"' # <a-F8> - Mark(highlight) current selection
+    bam global '<a-;>' <a-F8> ': mark-pattern toggle "%val{selection}"<ret>' # <a-F8> - Mark(highlight) current selection
     bam global '<a-;>' <s-F8> ': mark-clear<ret>'                            # <s-F8> - Erase mark highlighters
 }
 
 
 # User Mode(s)
 # ────────────
+map global user e ': eval %val{selection}<ret>' -docstring 'Eval sel'
+map global user z <c-s>                         -docstring 'Save sels'
+map global user q ': q<ret>'                    -docstring 'Quit'
+
 plug 'h-youhei/kakoune-surround' %|
     declare-user-mode surround
     map global surround s   ': surround<ret>'                 -docstring 'surround'
@@ -173,10 +214,12 @@ plug 'h-youhei/kakoune-surround' %|
     map global surround t   ': select-surrounding-tag<ret>'   -docstring 'select tag'
     map global surround <"> ': surround<ret>"'                -docstring 'surround with ""'
     map global surround <'> ": surround<ret>'"                -docstring "surround with ''"
+    map global surround <`> ': surround<ret>`'                -docstring 'surround with ``'
     map global surround <(> ': surround<ret>('                -docstring 'surround with ()'
     map global surround <{> ': surround<ret>{'                -docstring 'surround with {}'
-    map global surround <[> ': surround<ret>{'                -docstring 'surround with {}'
-    map global user s       ': enter-user-mode surround<ret>' -docstring 'Surround mode'
+    map global surround <[> ': surround<ret>['                -docstring 'surround with []'
+    map global surround <<> ': surround<ret><'                -docstring 'surround with <>'
+map global user s       ': enter-user-mode surround<ret>' -docstring 'Surround mode'
 |
 plug "danr/kakoune-easymotion" %{
     set global em_jumpchars "0123456789abcdefghijklmnopqrstuvwxyz"
@@ -209,20 +252,13 @@ plug "alexherbo2/word-select.kak" config %{
     map global normal b     ': word-select-previous-word<ret>'
     map global normal <a-b> ': word-select-previous-big-word<ret>'
 }
-plug "Delapouite/kakoune-text-objects"
+plug "Delapouite/kakoune-text-objects" config %{
+    unmap global object v
+    unmap global object d
+    unmap global object o
 
-
-
-# User Experience
-# ───────────────
-plug "caksoylar/kakoune-mysticaltutor"  theme
-plug "alexherbo2/kakoune-dracula-theme" theme
-colorscheme gruvbox-mod
-
-add-highlighter global/ show-matching
-add-highlighter global/ number-lines
-add-highlighter global/ regex '(\b|%|//|#)? ?(TODO|FIXME|XXX|NOTE)\b' 0:default+rb
-plug "alexherbo2/search-highlighter.kak"
+    map global object a 'u' -docstring 'argument'
+}
 
 
 

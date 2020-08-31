@@ -6,19 +6,32 @@
 
 config_version: 2
 settings:
+  aliases:
+    global:
+      q: close
+      qa: quit
+      t: tab-focus
+      w: session-save
+      wq: quit --save
+      wqa: quit --save
   auto_save.session:
     global: true
   bindings.commands:
     global:
+      insert:
+        <Ctrl+q>: leave-mode
       normal:
         <Ctrl+Shift+Tab>: tab-prev
         <Ctrl+Tab>: tab-next
         <Ctrl+t>: set-cmd-text -s :open -t -r
+        gt: set-cmd-text -s :tab-focus
   content.notifications:
     https://webchat.freenode.net: false
     https://www.facebook.com: false
   content.register_protocol_handler:
     https://mail.google.com?extsrc=mailto&url=%25s: false
+  downloads.position:
+    global: bottom
   editor.command:
     global:
     - kak-desktop
@@ -35,6 +48,10 @@ settings:
     global: word
   hints.scatter:
     global: false
+  input.insert_mode.auto_load:
+    global: true
+  input.partial_timeout:
+    global: 10000
   scrolling.smooth:
     global: true
   session.default_name:
@@ -53,10 +70,16 @@ settings:
       top: 1
   statusbar.position:
     global: bottom
+  tabs.last_close:
+    global: close
+  tabs.mode_on_change:
+    global: restore
   tabs.new_position.unrelated:
     global: next
   tabs.position:
-    global: top
+    global: bottom
+  tabs.select_on_remove:
+    global: last-used
   tabs.show:
     global: always
   url.default_page:
