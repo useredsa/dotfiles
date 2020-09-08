@@ -31,6 +31,7 @@ fi
 export EDITOR=kak-desktop
 export PAGER=kak-pager
 export MANPAGER=kak-man-pager
+export kak_session=default
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 
 alias ls='ls --color=auto'

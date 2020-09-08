@@ -18,9 +18,10 @@ plug "andreyorst/plug.kak" noload # Allow plug to manage itself. It's already be
 set-option global scrolloff 1,5
 plug "caksoylar/kakoune-mysticaltutor"  theme
 plug "alexherbo2/kakoune-dracula-theme" theme
+plug "caksoylar/kakoune-snow" theme
 def -override colorscheme-gruvbox-alpha %{
     colorscheme gruvbox-mod
-    set-face global PrimarySelection   "%opt{transparentfg},%opt{alpha_blue}"
+    set-face global PrimarySelection   "%opt{alpha_fg},%opt{alpha_blue}"
     set-face global SecondarySelection "%opt{alpha_fg},%opt{alpha_blue}"
 }
 def -override colorscheme-gruvbox-transparent %{
@@ -32,7 +33,7 @@ def -override colorscheme-gruvbox-transparent %{
     set-face global StatusLine         "%opt{fg}"
     set-face global BufferPadding      "%opt{bg2}"
 }
-colorscheme-gruvbox-transparent
+colorscheme-gruvbox-alpha
 
 
 add-highlighter global/ show-matching
