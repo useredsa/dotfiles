@@ -65,18 +65,23 @@ plug "ul/kak-lsp" config %{
     lsp-inlay-diagnostics-enable global
     map global user l ': enter-user-mode lsp<ret>' -docstring 'Lsp mode'
 }
-plug "alexherbo2/terminal-mode.kak" config %{
+plug "alexherbo2/terminal-mode.kak" defer kitty %{
+    require-module terminal-mode
     map global user t ': enter-user-mode terminal<ret>' -docstring 'Terminal mode'
-}
+    require-module x11
+    set global termcmd 'kitty sh -c'
+    terminal-set global x11 x11-terminal x11-focus
+} demand
 plug "alexherbo2/explore.kak" defer connect-rofi %{
     alias global explore-files rofi-files
     alias global explore-buffers rofi-buffers
 }
-plug "alexherbo2/connect.kak" do %{ make install } config %{
+plug "alexherbo2/connect.kak" do %{ make install } defer connect %{
     require-module connect-dmenu
     require-module connect-rofi
     require-module connect-dolphin
-}
+    require-module connect-broot
+} demand
 
 
 
@@ -167,10 +172,10 @@ map global normal    ⓘ      <tab>
 map global normal    t      <a-i>                         # t        - Trim Object
 map global normal  <tab>    )                             # <tab>    - Rotate selections forward
 map global normal  <s-tab>  (                             # <s-tab>  - Rotate selections backwards
-plug "alexherbo2/move-line.kak" %{
+plug "alexherbo2/move-line.kak" defer move-line %{
     bam global '<a-;>' <a-up>   ': move-line-above<ret>'  # <a-up>   - Move line up
     bam global '<a-;>' <a-down> ': move-line-below<ret>'  # <a-down> - Move line down
-}
+} demand
 plug "useredsa/dynamic-matching.kak" %{
     dynamic-matching-dmatch-conf
     map global normal m ': enter-user-mode dmatch<ret>'
@@ -235,10 +240,13 @@ plug "danr/kakoune-easymotion" %{
 # Editor mechanics/behaviour
 # ──────────────────────────
 plug "alexherbo2/auto-pairs.kak" defer auto-pairs %[
-    set-option global auto-pairs ( ) { }
+    set-option global auto_pairs ( ) { }
 ] demand
 plug 'Delapouite/kakoune-auto-percent'
-plug "lePerdu/kakboard" %{ hook global WinCreate .* %{ kakboard-enable } }
+plug "lePerdu/kakboard" config %{
+    hook global WinCreate .* %{ kakboard-enable }
+    hook global WinDisplay .* %{ set window kakboard_copy_cmd "base64 | (printf '\033]52;c;!\033\a\033]52;c;'; cat; printf '\a') >""%val{client_env_TTY}""" }
+}
 set global tabstop 4
 plug "andreyorst/smarttab.kak" defer smarttab %{
     set global softtabstop 4
@@ -247,12 +255,12 @@ plug "andreyorst/smarttab.kak" defer smarttab %{
     hook global WinSetOption filetype=(makefile|gas) noexpandtab
     hook global WinSetOption filetype=() smarttab
 }
-plug "alexherbo2/word-select.kak" config %{
+plug "alexherbo2/word-select.kak" defer word-select %{
     map global normal w     ': word-select-next-word<ret>'
     map global normal <a-w> ': word-select-next-big-word<ret>'
     map global normal b     ': word-select-previous-word<ret>'
     map global normal <a-b> ': word-select-previous-big-word<ret>'
-}
+} demand
 plug "Delapouite/kakoune-text-objects" config %{
     unmap global object v
     unmap global object d

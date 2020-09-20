@@ -5,29 +5,34 @@ compton &
 nitrogen --set-scaled --random ~/Pictures/Wallpapers/ &
 setxkbmap us intl
 
-bspc monitor -d I II III IV
+bspc monitor -d 1 2 3 4
+# Set desktop 2 as last desktop
+bspc desktop --focus 2
+bspc desktop --focus 1
 
-bspc config border_width         1
-bspc config window_gap           0
-bspc config top_padding          0
-bspc config bottom_padding       0
-bspc config left_padding         0
-bspc config right_padding        0
-bspc config normal_border_color  "#000000"
-bspc config active_border_color  "#000000"
-bspc config focused_border_color "#aaba4a"
+bspc config border_width          1
+bspc config window_gap            0
+bspc config top_padding           0
+bspc config bottom_padding        0
+bspc config left_padding          0
+bspc config right_padding         0
+bspc config normal_border_color   "#FFFFFF"
+bspc config active_border_color   "#aaba4a"
+bspc config focused_border_color  "#aaba4a"
+bspc config presel_feedback_color "#ccccdd"
 
 
-bspc config split_ratio          0.50
-bspc config single_monocle       true
-bspc config borderless_monocle   true
-bspc config gapless_monocle      true
-bspc config single_monocle       true
+bspc config split_ratio           0.50
+bspc config single_monocle        true
+bspc config borderless_monocle    true
+bspc config gapless_monocle       true
+bspc config single_monocle        true
 
-bspc rule -a Zathura state=tiled
-bspc rule -a TelegramDesktop state=floating sticky=on
-bspc rule -a discord state=floating sticky=on
-bspc rule -a ScratchTerm state=floating sticky=on
+bspc rule -a Zathura         state=tiled
+bspc rule -a TelegramDesktop state=fullscreen
+bspc rule -a discord         state=fullscreen
+bspc rule -a ScratchTerm     state=floating
 # bspc rule -a Gimp desktop='^8' state=floating follow=on
 # bspc rule -a Chromium desktop='^2'
 # bspc rule -a Screenkey manage=off
+

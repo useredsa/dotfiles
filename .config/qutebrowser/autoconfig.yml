@@ -23,8 +23,9 @@ settings:
       normal:
         <Ctrl+Shift+Tab>: tab-prev
         <Ctrl+Tab>: tab-next
+        <Ctrl+q>: nop
         <Ctrl+t>: set-cmd-text -s :open -t -r
-        ga: tab-focus -1
+        ga: tab-focus last
         gt: set-cmd-text -s :tab-focus
   colors.webpage.bg:
     global: white

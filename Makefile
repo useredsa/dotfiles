@@ -1,6 +1,6 @@
 .POSIX:
 
-.PHONY: acpilight alacritty bash bspwm cf dolphin env kak mime qutebrowser rofi sxhkd xbacklight xconf
+.PHONY: acpilight alacritty bash broot bspwm cf dolphin env kak kitty mime qutebrowser rofi sxhkd xbacklight xconf
 
 xbacklight:
 	# Don't symmlink across multiple partitions for udev rules!
@@ -10,6 +10,9 @@ acpilight: xbacklight
 
 alacritty:
 	ln -sf "$$(pwd)/.config/alacritty" "$$HOME/.config/"
+
+kitty:
+	ln -sf "$$(pwd)/.config/kitty" "$$HOME/.config/"
 
 bash: env
 	ln -sf "$$(pwd)/.bashrc" "$$HOME"
@@ -25,6 +28,9 @@ cf:
 
 dolphin: kdeconf
 	ln -sf "$$(pwd)/.config/dolphinrc" "$$HOME/.config/"
+
+broot:
+	ln -sf "$$(pwd)/.config/broot" "$$HOME/.config/"
 
 env:
 	ln -sf "$$(pwd)/.gitconfig" "$$HOME"

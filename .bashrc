@@ -24,15 +24,14 @@ if [ -n "$ALTPS1" ]; then
     PS1="$ALTPS1"
 fi
 # Prompt: Kakoune's connect plugin prompt + usual bash prompt
-if [ -e ~/.local/share/kak/connect/prompt ]; then
-    PS1="\$(~/.local/share/kak/connect/prompt)$PS1"
-fi
+PS1="\$(test \"\$IN_KAKOUNE_CONNECT\" && printf '(%s)🐈' \"\$KAKOUNE_SESSION\")$PS1"
 
 export EDITOR=kak-desktop
-export PAGER=kak-pager
+export PAGER=kak
 export MANPAGER=kak-man-pager
 export kak_session=default
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+export TTY="$(tty)"
 
 alias ls='ls --color=auto'
 alias la='ls -a'
@@ -50,3 +49,24 @@ if which upower 2>/dev/null 1>&2 ; then
     alias batstat="upower -i $(upower -e | grep BAT) | grep -E \"state|time (to\ full|to\ empty)|percentage\""
 fi
 
+n() {
+    # Block nesting of nnn in subshells
+    if [ -n $NNNLVL ] && [ "${NNNLVL:-0}" -ge 1 ]; then
+        echo "nnn is already running"
+        return
+    fi
+
+    export NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME/.config}/nnn/.lastd"
+    export NNN_PLUG='p:preview-tui;n:nuke;u:imgview'
+    export NNN_TRASH=1
+    export TERMINAL=$TERM
+    nnn -a "$@"
+
+    if [ -f "$NNN_TMPFILE" ]; then
+        . "$NNN_TMPFILE"
+        rm -f "$NNN_TMPFILE" > /dev/null
+    fi
+}
+
+
+source /home/useredsa/.config/broot/launcher/bash/br
