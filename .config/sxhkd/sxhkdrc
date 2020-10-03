@@ -16,26 +16,34 @@ super + p
 
 # Open a terminal
 super + Return
-	alacritty
+	kitty
 
 # Open the file browser
 super + e
 	dolphin
+
+# Open the audio manager
+super + v
+	mate-volume-control -p output
 
 ## At-hand applications (scratchpad-workspace like)
 ## ------------------------------------------------
 
 # Telegram
 super + m; t
-	bspc-toggle-visibility.sh TelegramDesktop Telegram --state fullscreen
+	bspc-toggle-visibility.sh TelegramDesktop telegram-desktop --state fullscreen
 
 # Discord
 super + m; d
-	bspc-toggle-visibility.sh discord discord --state fullscreen
+	bspc-toggle-visibility.sh discord --state fullscreen
+
+# Spotify
+super + m; s
+	bspc-toggle-visibility.sh spotify --state fullscreen --unnamed-rule
 
 # Terminal
 super + space
-	export ALTPS1='[\d \t \W]\$ ' ; bspc-toggle-visibility.sh ScratchTerm "alacritty --class Alacritty,ScratchTerm -e bash"
+	export ALTPS1='[\d \t \W]\$ ' ; bspc-toggle-visibility.sh ScratchTerm --state floating --instancename "alacritty --class ScratchTerm,Alacritty"
 
 
 
@@ -49,92 +57,175 @@ super + space
 super + shift + {q,r}
 	bspc {quit,wm -r}
 
-# Increment/Decrement window gaps
-super + F3: {equal,minus}
-    bspc config window_gap $(($(bspc config window_gap) {+,-} 1))
-
 ## Function Menus
 ## --------------
 
 # Help Menu
-super + F1
+super + {F1,question}
 	awk '/^[a-z]/ && last \{print "<small>",$0,"\t",last,"</small>"\} \{last=""\} /^#/\{last=$0\}' \
 	/home/useredsa/.config/sxhkd/sxhkdrc |                                       \
 	column -t -s $'\t' |                                                         \
-	rofi -dmenu -i -markup-rows -no-show-icons -monitor -5 -lines 5 -columns 1 | \
+	rofi -dmenu -p help -i -markup-rows -monitor -5 -lines 5 -columns 1 | \
 	grep -oE -e 'super[^#]*' | tr -d ' ' | tr ';' ' ' | xargs xdotool key
 
-# Layout Menu
+# Desktops menu
 super + F2
+	bspc desktop $(bspc query --desktops --names | rofi -dmenu -monitor -5) --focus
+
+
+# Layout Menu
+super + F3
 	printf "tall\nrtall\nwide\nrwide\neven\ntiled\nmonocle\n" | \
 	rofi -dmenu -monitor -5 -lines 1 -columns 7 |               \
 	xargs bsp-layout set
 
-## Window
-## ------
+# super + F4 is close
+# super + F5 is reload config
 
-# Set the window state
-super + {t,shift + t,shift+f,f}
-	bspc node --state {\~tiled,\~pseudo_tiled,\~floating,\~fullscreen}
+# Node flags Menu
+super + F6
+	bspc node --flag $(                                                          \
+	printf "hidden\nsticky\nprivate\nlocked\nmarked\n" | rofi -dmenu -monitor -5 \
+	)
+
+
+## Nodes
+## -----
+
+# Focus/Swap with an adjacent node
+super + {_,shift + }{h,j,k,l}
+	bspc node --{focus,swap} {west,south,north,east}
 
 # Close/kill window
 super + {F4,shift + F4}
 	bspc node {--close, -kill}
 
-# Focus last window
+# Focus last node
 super + Tab
-    bspc node -f last.local
+    bspc node --focus last.local
     # rofi -show window -monitor -5 -selected-row 2                                    \
     # -kb-accept-entry '!Super-Tab,!Super+Super_L'    -kb-cancel 'Super+Escape,Escape' \
     # -kb-row-up 'Super+ISO_Left_Tab,Super+Shift+Tab' -kb-row-down 'Super+Tab'
     # https://github.com/davatorium/rofi/issues/38
 
-# Move to/Exchange position with an adjacent window
-super + {_,shift + }{h,j,k,l}
-	bspc node -{f,s} {west,south,north,east}
+# Focus the newer/older node in the history
+super + {i,o}
+	bspc wm -h off; bspc node {newer,older} --focus; bspc wm -h on
 
-# Rotate Tree
-super + shift + {9,0}
-	bspc node @/ -C {forward,backward}
+# Set the node state
+super + {t,f,shift + t,shift + f}
+	bspc node --state {\~tiled,\~fullscreen,\~pseudo_tiled,\~floating}
+
+# Set the node flags
+super + s; {h,s,p,l,m}
+	bspc node --flag {hidden,sticky,private,locked,marked}
+
+
+## Marking and receptacles
+## -----------------------
+
+# Cut the current node
+super + x
+    bspc node --flag marked=on --flag hidden=on
+
+# Yank the current node
+super + c
+	bspc node --flag marked=on
+
+# Paste the current node
+super + v
+ 	bspc node any.marked  --flag hidden=off --to-node 'any.!automatic' --focus
+
+# Insert a receptacle and try pasting
+super + ctrl + {h,j,k,l}
+	bspc node --presel-dir {west,south,north,east}; \
+ 	bspc node any.marked --flag hidden=off --to-node 'any.!automatic' --focus
+
+# Remove receptacles (cancel the preselection for the focused node)
+super + ctrl + space
+	bspc node --presel-dir cancel
+
+# Swap the current node and the biggest local node
+super + b
+	bspc node -s biggest.local
+
+# Unhide (the newer) hidden node
+super + u
+	bspc node any.local.hidden --flag hidden --focus
+
+
+## Refactoring
+## -----------
+
+# Enter Refactoring Menu
+Menu:
+    
+# Exit Refactoring Menu
+Menu: Menu
+    xdotool key Escape
+
+Menu: super + {_,shift + }{h,j,k,l}
+	bspc node --{focus,swap} {west,south,north,east}
+
+# Focus a related node
+Menu: {Left,Down,Up,Right}
+	bspc node -f @{brother,first,parent,brother}
 
 # Resize the bottom right corner
-super + F3: {h,j,k,l}
-	bspc node -z {right -20 0,bottom 0 20,bottom 0 -20,right 20 0}
+Menu: {h,j,k,l}
+	bspc node --resize bottom_right {-20 0,0 20,0 -20,20 0}
 
 # Resize the top left corner
-super + F3: shift + {h,j,k,l}
-    bspc node -z {left -20 0,top 0 20,top 0 -20,left 20 0}
+Menu: shift + {h,j,k,l}
+    bspc node --resize top_left {-20 0,0 20,0 -20,20 0}
 
-# move a floating window
-super + {Left,Down,Up,Right}
-	bspc node -v {-20 0,0 20,0 -20,20 0}
+# Balance nodes
+Menu: b
+    bspc node @/ --balance
 
-# Preselect the direction
-super + ctrl + {h,j,k,l}
-	bspc node -p {west,south,north,east}
+# Rotate parent
+Menu: paren{left,right}
+	bspc node @parent --rotate {-90,90}
 
-# cancel the preselection for the focused node
-super + ctrl + space
-	bspc node -p cancel
+# Increment/Decrement node gaps
+Menu: {minus,equal}
+    bspc config window_gap $(($(bspc config window_gap) {-,+} 1))
+
 
 ## Desktop
 ## -------
 
-# Desktops menu
-super + shift + grave
-	bspc desktop $(bspc query --desktops --names | rofi -dmenu -monitor -5) -f
-
 # Focus last desktop
 super + grave
-	bspc desktop -f last.local
+	bspc desktop --focus; bspc desktop --focus last
 
-# Focus the next/previous desktop in the current monitor
-super + alt + {h,l}
-	bspc desktop -f {prev,next}.local
+# Focus the next/previous desktop
+super + bracket{left,right}
+	bspc wm -h off; bspc desktop -f {prev,next}; bspc wm -h on
 
-# Send window to the next/previous desktop
-super + alt + shift + {h,l}
-	bspc node -d {prev,next}.local --follow
+# Focus the given desktop
+super + {1-8}
+	bspc desktop -f '^{1-8}'
+
+# Send node to the last desktop
+super + shift + grave
+	bspc node -d last --focus
+
+# Send node to the next/previous desktop
+super + shift + bracket{left,right}
+	bspc node -d {prev,next} --follow
+
+# Send to the given desktop
+super + shift + {1-8}
+	bspc node -d '^{1-8}' --focus
+
+# Cycle Desktop's Tree
+super + {less,greater}
+	bspc node @/ --circulate {backward,forward}
+
+# Focus root node in the current desktop
+super + a
+	bspc node -f @/
 
 
 
@@ -148,8 +239,9 @@ super + alt + shift + {h,l}
 
 # PrintScreen (Screenshot)
 {shift + ,_}Print
-	gnome-screenshot {-i --window,_}
+	flameshot {gui ,full -c -p ~/Pictures/}
 
 # Adjust Screen Brightness
 {XF86MonBrightnessUp, XF86MonBrightnessDown}
 	xbacklight {-inc,-dec} 10
+

@@ -57,19 +57,19 @@ c.colors.completion.category.border.top = base00
 c.colors.completion.category.border.bottom = base00
 
 # Foreground color of the selected completion item.
-c.colors.completion.item.selected.fg = base05
+c.colors.completion.item.selected.fg = base00
 
 # Background color of the selected completion item.
-c.colors.completion.item.selected.bg = base02
+c.colors.completion.item.selected.bg = base05
 
 # Top border color of the selected completion item.
-c.colors.completion.item.selected.border.top = base02
+c.colors.completion.item.selected.border.top = base00
 
 # Bottom border color of the selected completion item.
-c.colors.completion.item.selected.border.bottom = base02
+c.colors.completion.item.selected.border.bottom = base00
 
 # Foreground color of the matched text in the selected completion item.
-c.colors.completion.item.selected.match.fg = base05
+c.colors.completion.item.selected.match.fg = base09
 
 # Foreground color of the matched text in the completion.
 c.colors.completion.match.fg = base09

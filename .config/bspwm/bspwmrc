@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-sxhkd &
+SXHKD_SHELL=sh sxhkd &
 compton &
 nitrogen --set-scaled --random ~/Pictures/Wallpapers/ &
 setxkbmap us intl
@@ -29,9 +29,9 @@ bspc config gapless_monocle       true
 bspc config single_monocle        true
 
 bspc rule -a Zathura         state=tiled
-bspc rule -a TelegramDesktop state=fullscreen
-bspc rule -a discord         state=fullscreen
-bspc rule -a ScratchTerm     state=floating
+# bspc rule -a TelegramDesktop state=fullscreen
+# bspc rule -a discord         state=fullscreen
+# bspc rule -a ScratchTerm     state=floating
 # bspc rule -a Gimp desktop='^8' state=floating follow=on
 # bspc rule -a Chromium desktop='^2'
 # bspc rule -a Screenkey manage=off

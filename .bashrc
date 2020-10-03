@@ -41,9 +41,11 @@ alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 
 alias myg++="g++ -O2 -Wall -std=c++17"
+alias mylatex="pdflatex --output-dir out"
 alias ks="kak-shell"
 alias o="xdg-open"
 alias less="$PAGER"
+alias tree="br -c :pt"
 # Add a battery status command if upower is installed
 if which upower 2>/dev/null 1>&2 ; then
     alias batstat="upower -i $(upower -e | grep BAT) | grep -E \"state|time (to\ full|to\ empty)|percentage\""
@@ -68,5 +70,9 @@ n() {
     fi
 }
 
+c() {
+    # Automatic cd on exit
+    br --only-folders --cmd "$1;:cd"
+}
 
 source /home/useredsa/.config/broot/launcher/bash/br
