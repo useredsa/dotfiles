@@ -53,7 +53,7 @@ super + space
 ## General
 ## -------
 
-# Quit/Restart bspwm
+# {Quit,Restart} bspwm
 super + shift + {q,r}
 	bspc {quit,wm -r}
 
@@ -62,9 +62,7 @@ super + shift + {q,r}
 
 # Help Menu
 super + {F1,question}
-	awk '/^[a-z]/ && last \{print "<small>",$0,"\t",last,"</small>"\} \{last=""\} /^#/\{last=$0\}' \
-	/home/useredsa/.config/sxhkd/sxhkdrc |                                       \
-	column -t -s $'\t' |                                                         \
+	/home/useredsa/.config/sxhkd/conf-parser < /home/useredsa/.config/sxhkd/sxhkdrc | \
 	rofi -dmenu -p help -i -markup-rows -monitor -5 -lines 5 -columns 1 | \
 	grep -oE -e 'super[^#]*' | tr -d ' ' | tr ';' ' ' | xargs xdotool key
 
@@ -92,23 +90,23 @@ super + F6
 ## Nodes
 ## -----
 
-# Focus/Swap with an adjacent node
+# {Focus,Swap} with an adjacent node
 super + {_,shift + }{h,j,k,l}
 	bspc node --{focus,swap} {west,south,north,east}
 
-# Close/kill window
+# {Close,Kill} window
 super + {F4,shift + F4}
 	bspc node {--close, -kill}
 
 # Focus last node
 super + Tab
-    bspc node --focus last.local
-    # rofi -show window -monitor -5 -selected-row 2                                    \
-    # -kb-accept-entry '!Super-Tab,!Super+Super_L'    -kb-cancel 'Super+Escape,Escape' \
-    # -kb-row-up 'Super+ISO_Left_Tab,Super+Shift+Tab' -kb-row-down 'Super+Tab'
-    # https://github.com/davatorium/rofi/issues/38
+	bspc node --focus last.local
+	# rofi -show window -monitor -5 -selected-row 2                                    \
+	# -kb-accept-entry '!Super-Tab,!Super+Super_L'    -kb-cancel 'Super+Escape,Escape' \
+	# -kb-row-up 'Super+ISO_Left_Tab,Super+Shift+Tab' -kb-row-down 'Super+Tab'
+	# https://github.com/davatorium/rofi/issues/38
 
-# Focus the newer/older node in the history
+# Focus the {newer,older} node in the history
 super + {i,o}
 	bspc wm -h off; bspc node {newer,older} --focus; bspc wm -h on
 
@@ -126,7 +124,7 @@ super + s; {h,s,p,l,m}
 
 # Cut the current node
 super + x
-    bspc node --flag marked=on --flag hidden=on
+	bspc node --flag marked=on --flag hidden=on
 
 # Yank the current node
 super + c
@@ -134,12 +132,12 @@ super + c
 
 # Paste the current node
 super + v
- 	bspc node any.marked  --flag hidden=off --to-node 'any.!automatic' --focus
+	bspc node any.marked  --flag hidden=off --to-node 'any.!automatic' --focus
 
 # Insert a receptacle and try pasting
 super + ctrl + {h,j,k,l}
 	bspc node --presel-dir {west,south,north,east}; \
- 	bspc node any.marked --flag hidden=off --to-node 'any.!automatic' --focus
+	bspc node any.marked --flag hidden=off --to-node 'any.!automatic' --focus
 
 # Remove receptacles (cancel the preselection for the focused node)
 super + ctrl + space
@@ -159,10 +157,10 @@ super + u
 
 # Enter Refactoring Menu
 Menu:
-    
+
 # Exit Refactoring Menu
 Menu: Menu
-    xdotool key Escape
+	xdotool key Escape
 
 Menu: super + {_,shift + }{h,j,k,l}
 	bspc node --{focus,swap} {west,south,north,east}
@@ -177,19 +175,19 @@ Menu: {h,j,k,l}
 
 # Resize the top left corner
 Menu: shift + {h,j,k,l}
-    bspc node --resize top_left {-20 0,0 20,0 -20,20 0}
+	bspc node --resize top_left {-20 0,0 20,0 -20,20 0}
 
 # Balance nodes
 Menu: b
-    bspc node @/ --balance
+	bspc node @/ --balance
 
 # Rotate parent
 Menu: paren{left,right}
 	bspc node @parent --rotate {-90,90}
 
-# Increment/Decrement node gaps
+# {Increment,Decrement} node gaps
 Menu: {minus,equal}
-    bspc config window_gap $(($(bspc config window_gap) {-,+} 1))
+	bspc config window_gap $(($(bspc config window_gap) {-,+} 1))
 
 
 ## Desktop
@@ -199,7 +197,7 @@ Menu: {minus,equal}
 super + grave
 	bspc desktop --focus; bspc desktop --focus last
 
-# Focus the next/previous desktop
+# Focus the {next,previous} desktop
 super + bracket{left,right}
 	bspc wm -h off; bspc desktop -f {prev,next}; bspc wm -h on
 
@@ -211,7 +209,7 @@ super + {1-8}
 super + shift + grave
 	bspc node -d last --focus
 
-# Send node to the next/previous desktop
+# Send node to the {next,previous} desktop
 super + shift + bracket{left,right}
 	bspc node -d {prev,next} --follow
 
@@ -236,6 +234,13 @@ super + a
 {XF86AudioLowerVolume, XF86AudioRaiseVolume, XF86AudioMute}
 	amixer sset Master {3%-,3%\+,toggle} \
 	#| grep -E "[0-9]+%" | head -c -1 | xargs --null rofi -e
+
+# Switch between audio outputs
+{XF86AudioPrev, XF86AudioNext}
+	nsinks=$(pactl list short sinks | wc -l) && \
+	active=$(pactl list short sinks | grep RUNNING -n | cut -f 1 -d :) && \
+	next=$(( (active + nsinks - 1 {-,+} 1) % nsinks + 1)) && \
+	paswitch $(pactl list short sinks | head -$next | tail -1 | cut -f 1)
 
 # PrintScreen (Screenshot)
 {shift + ,_}Print

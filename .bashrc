@@ -19,12 +19,12 @@ if [ "$(cat /etc/hostname)" != "Server000" ]; then
 fi
 
 # Prompt: My support for starting terminals with different prompts.
-PS1='[\u@\h \W]\$ '
+PS1='$([ "\u" = useredsa ] && [[ "\h" =~ ^Device...$ ]] ||  printf "%s" "\u@\h ")\W \$ '
 if [ -n "$ALTPS1" ]; then
     PS1="$ALTPS1"
 fi
 # Prompt: Kakoune's connect plugin prompt + usual bash prompt
-PS1="\$(test \"\$IN_KAKOUNE_CONNECT\" && printf '(%s)🐈' \"\$KAKOUNE_SESSION\")$PS1"
+PS1="\$([ \"\$IN_KAKOUNE_CONNECT\" ] && printf '(%s)🐈' \"\$KAKOUNE_SESSION\")$PS1"
 
 export EDITOR=kak-desktop
 export PAGER=kak
@@ -75,4 +75,5 @@ c() {
     br --only-folders --cmd "$1;:cd"
 }
 
-source /home/useredsa/.config/broot/launcher/bash/br
+
+[[ -f ~/.config/broot/launcher/bash/br ]] && source ~/.config/broot/launcher/bash/br

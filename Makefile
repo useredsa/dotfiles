@@ -34,6 +34,7 @@ broot:
 
 env:
 	ln -sf "$$(pwd)/.gitconfig" "$$HOME"
+	ln -sf "$$(pwd)/gitignore" "$$HOME/.config/"
 	# ln -sf "$$(pwd)/.profile" "$$HOME"
 
 kak:
@@ -53,7 +54,10 @@ qutebrowser:
 rofi:
 	ln -sf "$$(pwd)/.config/rofi" "$$HOME/.config/"
 
-sxhkd:
+.config/sxhkd/conf-parser: .config/sxhkd/conf-parser.cpp
+	g++ -Wall -O2 $< -o $@
+
+sxhkd: .config/sxhkd/conf-parser
 	ln -sf "$$(pwd)/.config/sxhkd" "$$HOME/.config/"
 	ln -sf "$$(pwd)/.config/sxhkd/bspc-toggle-visibility.sh" "$$HOME/.local/bin"
 

@@ -251,7 +251,7 @@ set global tabstop 4
 plug "andreyorst/smarttab.kak" defer smarttab %{
     set global softtabstop 4
 } config %{
-    hook global WinSetOption filetype=(c|cpp|asciidoctor|rust|markdown|kak|sh|perl) expandtab
+    hook global WinSetOption filetype=(c|cpp|asciidoctor|rust|markdown|kak|sh|perl|julia|latex) expandtab
     hook global WinSetOption filetype=(makefile|gas) noexpandtab
     hook global WinSetOption filetype=() smarttab
 }
@@ -274,24 +274,24 @@ plug "Delapouite/kakoune-text-objects" config %{
 # File Specific
 # ─────────────
 hook global BufCreate .*\.(markdown|md|mkd) %{ set-option buffer filetype markdown }
-hook global BufCreate .*\.(latex) %{ set-option buffer filetype tex }
+hook global BufCreate .*\.(latex) %{ set-option buffer filetype latex }
 
-hook global WinSetOption filetype=(c|cpp|tex|markdown) %{
+hook global WinSetOption filetype=(c|cpp|latex|markdown) %{
     add-highlighter window/ wrap -indent -width 95 -marker …
 }
 
-hook global WinSetOption filetype=tex %{
-    define-command compile2pdf -override -docstring "compile latex" %{ echo %sh{
-        target=$kak_buffile
-        dir="$(dirname $target)"
-        cd "$dir"
-        if [ -f header.tex ]; then
-            target=header.tex
-        fi
-        printf "Compiling %s to %s\n" "$target" "out"
-        texfot pdflatex -halt-on-error -output-directory "out" "$target"
-	}}
+define-command compile2pdf -override -docstring "compile latex" %{ echo %sh{
+    target=$kak_buffile
+    dir="$(dirname $target)"
+    cd "$dir"
+    if [ -f header.tex ]; then
+        target=header.tex
+    fi
+    printf "Compiling %s to %s\n" "$target" "out"
+    texfot pdflatex -halt-on-error -output-directory "out" "$target"
+}}
 
+hook global WinSetOption filetype=latex %{
     # hook window BufWritePost .* %{ %sh{ pdflatex header.tex } } # Compile on save
     bam window '<a-;>' <c-w> ': compile2pdf<ret>'
 }

@@ -12,4 +12,4 @@ if systemctl -q is-active graphical.target && [[ !$DISPLAY && $XDG_VTNR -eq 1 ]]
     exec startx
 fi
 
-source /home/useredsa/.config/broot/launcher/bash/br
+[[ -f ~/.config/broot/launcher/bash/br ]] && source ~/.config/broot/launcher/bash/br
