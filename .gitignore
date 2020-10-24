@@ -1,7 +1,8 @@
 .vim
 !.vim/colors
 !.vim/UltiSnips
-.config/kak/plugins/*
+.config/kak/autoload/core
+.config/kak/autoload/plugins/*
 .config/kak/colors/*
 .config/qutebrowser/*
 !.config/qutebrowser/autoconfig.yml

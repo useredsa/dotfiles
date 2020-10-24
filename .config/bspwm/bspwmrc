@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-SXHKD_SHELL=sh sxhkd &
-compton &
+SXHKD_SHELL=sh BSPWM_BORDER_WIDTH=1 sxhkd &
+picom &
 nitrogen --set-scaled --random ~/Pictures/Wallpapers/ &
 setxkbmap us intl
 

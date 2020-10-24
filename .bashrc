@@ -44,7 +44,6 @@ alias myg++="g++ -O2 -Wall -std=c++17"
 alias mylatex="pdflatex --output-dir out"
 alias ks="kak-shell"
 alias o="xdg-open"
-alias less="$PAGER"
 alias tree="br -c :pt"
 # Add a battery status command if upower is installed
 if which upower 2>/dev/null 1>&2 ; then

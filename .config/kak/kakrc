@@ -1,4 +1,4 @@
-set global startup_info_version 20200804 # Only show update messages post v2020.08.04
+set global startup_info_version 20201901 # Only show update messages post v2020.08.04
 def config -docstring %{ config: Edit kakrc } %{ edit ~/.config/kak/kakrc }
 def update-config -docstring %{ update-config: Reload kakoune with the current buffers } %{
     # source #TODO
@@ -8,17 +8,20 @@ def update-config -docstring %{ update-config: Reload kakoune with the current b
 
 # Plugin Management
 # ─────────────────
-source "%val{config}/plugins/plug.kak/rc/plug.kak"  # Source plug.kak. The plugin manager.
-plug "andreyorst/plug.kak" noload # Allow plug to manage itself. It's already been loaded.
+require-module plug
+plug plug https://github.com/alexherbo2/plug.kak
 
+
+plug-core %{
+}
 
 
 # User Experience
 # ───────────────
 set-option global scrolloff 1,5
-plug "caksoylar/kakoune-mysticaltutor"  theme
-plug "alexherbo2/kakoune-dracula-theme" theme
-plug "caksoylar/kakoune-snow" theme
+# plug "caksoylar/kakoune-mysticaltutor"  theme
+# plug "alexherbo2/kakoune-dracula-theme" theme
+# plug "caksoylar/kakoune-snow" theme
 def -override colorscheme-gruvbox-alpha %{
     colorscheme gruvbox-mod
     set-face global PrimarySelection   "%opt{alpha_fg},%opt{alpha_blue}"
@@ -39,49 +42,40 @@ colorscheme-gruvbox-alpha
 add-highlighter global/ show-matching
 add-highlighter global/ number-lines
 add-highlighter global/ regex '(\b|%|//|#)? ?(TODO|FIXME|XXX|NOTE)\b' 0:default+rb
-plug "alexherbo2/search-highlighter.kak"
 
 
 
 # Extra Functionality plugins
 # ───────────────────────────
-plug "occivink/kakoune-snippets"
-plug "alexherbo2/prelude.kak"
-plug "useredsa/pager.kak" noload do %{ ln -f bin/kak-man-pager bin/kak-pager ~/.local/bin }
-plug "eraserhd/kak-ansi"
-plug "andreyorst/tagbar.kak" defer "tagbar" %{
-    set-option global tagbar_sort         false
-    set-option global tagbar_display_anon false
-    set-option global tagbar_size         40
-} config %{
-    # if you have wrap highlighter enabled in you configuration
-    # files it's better to turn it off for tagbar, using this hook:
-    hook global WinSetOption filetype=tagbar %{ remove-highlighter window/wrap }
-}
-plug "ul/kak-lsp" config %{
-    hook global WinSetOption filetype=(c|cpp|latex) lsp-enable-window
+plug-old kakoune-snippets "https://github.com/occivink/kakoune-snippets"
+plug prelude "https://github.com/alexherbo2/prelude.kak"
+#TODO plug-old "useredsa/pager.kak" noload do %{ ln -f bin/kak-man-pager bin/kak-pager ~/.local/bin }
+plug-old kak-ansi "https://github.com/eraserhd/kak-ansi"
+plug-old lsp "https://github.com/ul/kak-lsp" %{
+    hook global WinSetOption filetype=(c|cpp|latex|java) lsp-enable-window
     lsp-auto-hover-enable
     set global lsp_hover_anchor true
     lsp-inlay-diagnostics-enable global
     map global user l ': enter-user-mode lsp<ret>' -docstring 'Lsp mode'
 }
-plug "alexherbo2/terminal-mode.kak" defer kitty %{
+plug terminal-mode "https://github.com/alexherbo2/terminal-mode.kak" %{
+    require-module kitty
     require-module terminal-mode
     map global user t ': enter-user-mode terminal<ret>' -docstring 'Terminal mode'
     require-module x11
     set global termcmd 'kitty sh -c'
     terminal-set global x11 x11-terminal x11-focus
-} demand
-plug "alexherbo2/explore.kak" defer connect-rofi %{
-    alias global explore-files rofi-files
-    alias global explore-buffers rofi-buffers
 }
-plug "alexherbo2/connect.kak" do %{ make install } defer connect %{
-    require-module connect-dmenu
+#TODO make install
+plug connect "https://github.com/alexherbo2/connect.kak" %{
     require-module connect-rofi
     require-module connect-dolphin
     require-module connect-broot
-} demand
+}
+plug explore "https://github.com/alexherbo2/explore.kak" %{
+    alias global explore-files rofi-files
+    alias global explore-buffers rofi-buffers
+}
 
 
 
@@ -125,7 +119,7 @@ define-command select-or-add-cursor -docstring %{
 ## Shortcuts
 ## ─────────
 # <c-g> - Creates/Removes a phantom group of selections
-plug "occivink/kakoune-phantom-selection" %{
+plug-old kakoune-phantom-selection "https://github.com/occivink/kakoune-phantom-selection" %{
     # face global PhantomSelection "default,rgba:72637216+g"
     face global PhantomSelection "%opt{alpha_fg},%opt{alpha_purple}"
         define-command -hidden -override -docstring "Creates a phantom group of selections" \
@@ -172,11 +166,11 @@ map global normal    ⓘ      <tab>
 map global normal    t      <a-i>                         # t        - Trim Object
 map global normal  <tab>    )                             # <tab>    - Rotate selections forward
 map global normal  <s-tab>  (                             # <s-tab>  - Rotate selections backwards
-plug "alexherbo2/move-line.kak" defer move-line %{
+plug move-line "https://github.com/alexherbo2/move-line.kak" %{
     bam global '<a-;>' <a-up>   ': move-line-above<ret>'  # <a-up>   - Move line up
     bam global '<a-;>' <a-down> ': move-line-below<ret>'  # <a-down> - Move line down
-} demand
-plug "useredsa/dynamic-matching.kak" %{
+}
+plug dynamic-matching "https://github.com/useredsa/dynamic-matching.kak" %{
     dynamic-matching-dmatch-conf
     map global normal m ': enter-user-mode dmatch<ret>'
     map global normal M ': enter-user-mode Dmatch<ret>'
@@ -194,12 +188,12 @@ hook global InsertCompletionHide .* %{
     unmap window insert <esc>   <c-o>
 }
 
-plug 'https://gitlab.com/Screwtapello/kakoune-inc-dec' %{
+plug-old kakoune-inc-dec 'https://gitlab.com/Screwtapello/kakoune-inc-dec' %{
     map global normal <plus>  ': inc-dec-modify-numbers + %val{count}<ret>'  # <plus>  - Increment number
     map global normal <minus> ': inc-dec-modify-numbers - %val{count}<ret>'  # <minus> - Decrement number
 }
 
-plug "https://gitlab.com/fsub/kakoune-mark" %{
+plug-old kakoune-mark "https://gitlab.com/fsub/kakoune-mark" %{
     bam global '<a-;>' <F8>   ': mark-word<ret>'                             # <F8>   - Mark(highlight) word under the cursor
     bam global '<a-;>' <a-F8> ': mark-pattern toggle "%val{selection}"<ret>' # <a-F8> - Mark(highlight) current selection
     bam global '<a-;>' <s-F8> ': mark-clear<ret>'                            # <s-F8> - Erase mark highlighters
@@ -212,7 +206,7 @@ map global user e ': eval %val{selection}<ret>' -docstring 'Eval sel'
 map global user z <c-s>                         -docstring 'Save sels'
 map global user q ': q<ret>'                    -docstring 'Quit'
 
-plug 'h-youhei/kakoune-surround' %|
+plug-old surround 'https://github.com/h-youhei/kakoune-surround' %|
     declare-user-mode surround
     map global surround s   ': surround<ret>'                 -docstring 'surround'
     map global surround c   ': change-surround<ret>'          -docstring 'change'
@@ -225,9 +219,9 @@ plug 'h-youhei/kakoune-surround' %|
     map global surround <{> ': surround<ret>{'                -docstring 'surround with {}'
     map global surround <[> ': surround<ret>['                -docstring 'surround with []'
     map global surround <<> ': surround<ret><'                -docstring 'surround with <>'
-map global user s       ': enter-user-mode surround<ret>' -docstring 'Surround mode'
+    map global user s       ': enter-user-mode surround<ret>' -docstring 'Surround mode'
 |
-plug "danr/kakoune-easymotion" %{
+plug-old easy-motion "https://github.com/danr/kakoune-easymotion" %{
     set global em_jumpchars "0123456789abcdefghijklmnopqrstuvwxyz"
     map global goto j '<esc>: easy-motion-j<ret>' -docstring "following lines"
     map global goto k '<esc>: easy-motion-k<ret>' -docstring "previous lines"
@@ -239,29 +233,28 @@ plug "danr/kakoune-easymotion" %{
 
 # Editor mechanics/behaviour
 # ──────────────────────────
-plug "alexherbo2/auto-pairs.kak" defer auto-pairs %[
+plug auto-pairs "https://github.com/alexherbo2/auto-pairs.kak" %[
     set-option global auto_pairs ( ) { }
-] demand
-plug 'Delapouite/kakoune-auto-percent'
-plug "lePerdu/kakboard" config %{
+]
+plug-old auto-percent 'https://github.com/Delapouite/kakoune-auto-percent'
+plug-old kakboard "https://github.com/lePerdu/kakboard" %{
     hook global WinCreate .* %{ kakboard-enable }
     # hook global WinDisplay .* %{ set window kakboard_copy_cmd "base64 | (printf '\033]52;c;!\033\a\033]52;c;'; cat; printf '\a') >""%val{client_env_TTY}""" }
 }
 set global tabstop 4
-plug "andreyorst/smarttab.kak" defer smarttab %{
+plug smarttab "https://github.com/andreyorst/smarttab.kak" %{
     set global softtabstop 4
-} config %{
     hook global WinSetOption filetype=(c|cpp|asciidoctor|rust|markdown|kak|sh|perl|julia|latex) expandtab
     hook global WinSetOption filetype=(makefile|gas) noexpandtab
     hook global WinSetOption filetype=() smarttab
 }
-plug "alexherbo2/word-select.kak" defer word-select %{
+plug word-select "https://github.com/alexherbo2/word-select.kak" %{
     map global normal w     ': word-select-next-word<ret>'
     map global normal <a-w> ': word-select-next-big-word<ret>'
     map global normal b     ': word-select-previous-word<ret>'
     map global normal <a-b> ': word-select-previous-big-word<ret>'
-} demand
-plug "Delapouite/kakoune-text-objects" config %{
+}
+plug-old text-objects "https://github.com/Delapouite/kakoune-text-objects" %{
     unmap global object v
     unmap global object d
     unmap global object o
@@ -383,3 +376,7 @@ hook global BufCreate (.*/)?(\.kakrc\.local) %{
 }
 try %{ source .kakrc.local }
 
+plug bspwm tools/bspwm.kak %{
+    set -add global windowing_modules bspwm
+    require-module connect-bspwm
+}

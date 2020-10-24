@@ -149,44 +149,45 @@ super + b
 
 # Unhide (the newer) hidden node
 super + u
-	bspc node any.local.hidden --flag hidden --focus
+	bspc node any.local.hidden.window --flag hidden --focus
 
 
 ## Refactoring
 ## -----------
 
 # Enter Refactoring Menu
-Menu:
+Menu
+	bspc config border_width $((BSPWM_BORDER_WIDTH+5)) && xdotool key Scroll_Lock
 
 # Exit Refactoring Menu
-Menu: Menu
-	xdotool key Escape
+Scroll_Lock: Menu
+	bspc config border_width 1 && xdotool key Escape
 
-Menu: super + {_,shift + }{h,j,k,l}
+Scroll_Lock: super + {_,shift + }{h,j,k,l}
 	bspc node --{focus,swap} {west,south,north,east}
 
 # Focus a related node
-Menu: {Left,Down,Up,Right}
+Scroll_Lock: {Left,Down,Up,Right}
 	bspc node -f @{brother,first,parent,brother}
 
 # Resize the bottom right corner
-Menu: {h,j,k,l}
+Scroll_Lock: {h,j,k,l}
 	bspc node --resize bottom_right {-20 0,0 20,0 -20,20 0}
 
 # Resize the top left corner
-Menu: shift + {h,j,k,l}
+Scroll_Lock: shift + {h,j,k,l}
 	bspc node --resize top_left {-20 0,0 20,0 -20,20 0}
 
 # Balance nodes
-Menu: b
+Scroll_Lock: b
 	bspc node @/ --balance
 
 # Rotate parent
-Menu: paren{left,right}
+Scroll_Lock: paren{left,right}
 	bspc node @parent --rotate {-90,90}
 
 # {Increment,Decrement} node gaps
-Menu: {minus,equal}
+Scroll_Lock: {minus,equal}
 	bspc config window_gap $(($(bspc config window_gap) {-,+} 1))
 
 

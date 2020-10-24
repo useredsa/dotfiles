@@ -2,7 +2,13 @@
 filetypes = ["latex"]
 roots = ["header.tex", "out"]
 command = "/home/useredsa/bin/texlab"
+[language.java]
+filetypes = ["java"]
+roots = ["src"]
+command = "java-language-server"
 [language.c_cpp]
 filetypes = ["c", "cpp"]
 roots = ["compile_commands.json", ".clangd"]
 command = "clangd"
+# kak-lsp does not support newText https://github.com/ul/kak-lsp/issues/40
+args = ["--init={\"completion\":{\"detailedLabel\":false}}"]

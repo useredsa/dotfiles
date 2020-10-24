@@ -1,6 +1,6 @@
 .POSIX:
 
-.PHONY: acpilight alacritty bash broot bspwm cf dolphin env kak kitty mime qutebrowser rofi sxhkd xbacklight xconf
+.PHONY: acpilight alacritty bash broot bspwm cf dolphin env kak kak-lsp kitty mime picom qutebrowser rofi sxhkd xbacklight xconf zathura
 
 xbacklight:
 	# Don't symmlink across multiple partitions for udev rules!
@@ -23,6 +23,9 @@ bspwm:
 	ln -sf "$$(pwd)/.config/bspwm" "$$HOME/.config/"
 	sudo "$$(pwd)/.config/bspwm/bsp-layout-install.sh"
 
+picom:
+	ln -sf "$$(pwd)/.config/picom" "$$HOME/.config/"
+
 cf:
 	ln -sf "$$(pwd)/.cf" "$$HOME"
 
@@ -37,11 +40,14 @@ env:
 	ln -sf "$$(pwd)/gitignore" "$$HOME/.config/"
 	# ln -sf "$$(pwd)/.profile" "$$HOME"
 
-kak:
+kak: kak-lsp
 	ln -sf "$$(pwd)/.config/kak" "$$HOME/.config/"
-	mkdir -p "$HOME/.config/kak/plugins"
-	git clone https://github.com/andreyorst/plug.kak.git ~/.config/kak/plugins/plug.kak
+	mkdir -p "$HOME/.config/kak/autoload/plugins"
+	git clone https://github.com/alexherbo2/plug.kak ~/.config/kak/autoload/plugins/plug.kak
 	echo "Now Init kak and type :plug-install" to install the plugins
+
+kak-lsp:
+	ln -sf "$$(pwd)/.config/kak-lsp" "$$HOME/.config/"
 
 mime:
 	ln -sf "$$(pwd)/.config/mimeapps.list" "$$HOME/.config/"
@@ -63,3 +69,6 @@ sxhkd: .config/sxhkd/conf-parser
 
 xconf:
 	ln -sf "$$(pwd)/.xinitrc" "$$HOME"
+
+zathura:
+	ln -sf "$$(pwd)/.config/zathura" "$$HOME/.config/"
