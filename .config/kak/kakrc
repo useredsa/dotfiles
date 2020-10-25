@@ -273,22 +273,6 @@ hook global WinSetOption filetype=(c|cpp|latex|markdown) %{
     add-highlighter window/ wrap -indent -width 95 -marker …
 }
 
-define-command compile2pdf -override -docstring "compile latex" %{ echo %sh{
-    target=$kak_buffile
-    dir="$(dirname $target)"
-    cd "$dir"
-    if [ -f header.tex ]; then
-        target=header.tex
-    fi
-    printf "Compiling %s to %s\n" "$target" "out"
-    texfot pdflatex -halt-on-error -output-directory "out" "$target"
-}}
-
-hook global WinSetOption filetype=latex %{
-    # hook window BufWritePost .* %{ %sh{ pdflatex header.tex } } # Compile on save
-    bam window '<a-;>' <c-w> ': compile2pdf<ret>'
-}
-
 hook global WinSetOption filetype=cf %{
     hook -group ansi buffer BufReadFifo .* %{ eval -draft %sh{
             printf "select %s\n" "$kak_hook_param"
