@@ -52,7 +52,7 @@ plug prelude "https://github.com/alexherbo2/prelude.kak"
 #TODO plug-old "useredsa/pager.kak" noload do %{ ln -f bin/kak-man-pager bin/kak-pager ~/.local/bin }
 plug-old kak-ansi "https://github.com/eraserhd/kak-ansi"
 plug-old lsp "https://github.com/ul/kak-lsp" %{
-    hook global WinSetOption filetype=(c|cpp|latex|java) lsp-enable-window
+    hook global WinSetOption filetype=(c|cpp|latex) lsp-enable-window
     lsp-auto-hover-enable
     set global lsp_hover_anchor true
     lsp-inlay-diagnostics-enable global
@@ -71,10 +71,22 @@ plug connect "https://github.com/alexherbo2/connect.kak" %{
     require-module connect-rofi
     require-module connect-dolphin
     require-module connect-broot
+    require-module connect-fzf
+    define-command fzf-files -override -params .. -file-completion -docstring 'Open files with fzf' %{
+        terminal-set global kitty kitty-terminal-tab kitty-focus
+        > :fzf-files %arg{@}
+        terminal-set global x11 x11-terminal x11-focus
+    }
+    define-command fzf-buffers -override -params ..1 -buffer-completion -docstring 'Open buffers with fzf' %{
+        terminal-set global kitty kitty-terminal-tab kitty-focus
+        > :fzf-buffers %arg{@}
+        terminal-set global x11 x11-terminal x11-focus
+    }
 }
 plug explore "https://github.com/alexherbo2/explore.kak" %{
-    alias global explore-files rofi-files
-    alias global explore-buffers rofi-buffers
+    alias global explore-files fzf-files
+    alias global explore-buffers fzf-buffers
+    explore-enable
 }
 
 
@@ -166,6 +178,8 @@ map global normal    ⓘ      <tab>
 map global normal    t      <a-i>                         # t        - Trim Object
 map global normal  <tab>    )                             # <tab>    - Rotate selections forward
 map global normal  <s-tab>  (                             # <s-tab>  - Rotate selections backwards
+bam global '<a-;>'   ㉆     ': bn<ret>'                   # <c-tab>  - Rotate selections forward
+bam global '<a-;>'   ㋟     ': bp<ret>'                   # <c-s-tab>- Rotate selections backwards
 plug move-line "https://github.com/alexherbo2/move-line.kak" %{
     bam global '<a-;>' <a-up>   ': move-line-above<ret>'  # <a-up>   - Move line up
     bam global '<a-;>' <a-down> ': move-line-below<ret>'  # <a-down> - Move line down
@@ -249,10 +263,10 @@ plug smarttab "https://github.com/andreyorst/smarttab.kak" %{
     hook global WinSetOption filetype=() smarttab
 }
 plug word-select "https://github.com/alexherbo2/word-select.kak" %{
-    map global normal w     ': word-select-next-word<ret>'
-    map global normal <a-w> ': word-select-next-big-word<ret>'
-    map global normal b     ': word-select-previous-word<ret>'
-    map global normal <a-b> ': word-select-previous-big-word<ret>'
+    map global normal w     '<a-:>: word-select-next-word<ret>'
+    map global normal <a-w> '<a-:>: word-select-next-big-word<ret>'
+    map global normal b     '<a-:><a-;>: word-select-previous-word<ret>'
+    map global normal <a-b> '<a-:><a-;>: word-select-previous-big-word<ret>'
 }
 plug-old text-objects "https://github.com/Delapouite/kakoune-text-objects" %{
     unmap global object v

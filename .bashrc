@@ -39,11 +39,13 @@ alias ll='ls -alF'
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
+alias mkdir='mkdir -pv'
 
 alias myg++="g++ -O2 -Wall -std=c++17"
 alias mylatex="pdflatex --output-dir out"
 alias ks="kak-shell"
 alias o="xdg-open"
+alias open="xdg-open 2>/dev/null"
 alias tree="br -c :pt"
 # Add a battery status command if upower is installed
 if which upower 2>/dev/null 1>&2 ; then
@@ -76,3 +78,6 @@ c() {
 
 
 [[ -f ~/.config/broot/launcher/bash/br ]] && source ~/.config/broot/launcher/bash/br
+[[ -f /usr/share/fzf/completion.bash ]] && source /usr/share/fzf/completion.bash
+[[ -f /usr/share/fzf/key-bindings.bash ]] && source /usr/share/fzf/key-bindings.bash
+

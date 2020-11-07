@@ -45,6 +45,14 @@ super + m; s
 super + space
 	export ALTPS1='[\d \t \W]\$ ' ; bspc-toggle-visibility.sh ScratchTerm --state floating --instancename "alacritty --class ScratchTerm,Alacritty"
 
+# Zoom Chat
+super + m; c
+	bspc node $(xdotool search --name Chat) --flag hidden
+
+# Akregator
+super + m; f
+	bspc-toggle-visibility.sh akregator --state fullscreen
+
 
 
 ### Bspwm Settings
@@ -134,12 +142,12 @@ super + c
 super + v
 	bspc node any.marked  --flag hidden=off --to-node 'any.!automatic' --focus
 
-# Insert a receptacle and try pasting
+# Set a preselection and try pasting window
 super + ctrl + {h,j,k,l}
 	bspc node --presel-dir {west,south,north,east}; \
 	bspc node any.marked --flag hidden=off --to-node 'any.!automatic' --focus
 
-# Remove receptacles (cancel the preselection for the focused node)
+# Remove preselection/receptacles
 super + ctrl + space
 	bspc node --presel-dir cancel
 
@@ -150,6 +158,15 @@ super + b
 # Unhide (the newer) hidden node
 super + u
 	bspc node any.local.hidden.window --flag hidden --focus
+
+# Unhide (the newer) hidden node
+super + u
+	bspc node any.local.hidden.window --flag hidden --focus
+
+# Delete receptacle
+super + d
+	node=$(bspc query -N -n 'any.leaf.!window'); \
+	[ -n "$node" ] && bspc node "$node#@brother" -n "$node"
 
 
 ## Refactoring
@@ -195,7 +212,7 @@ Scroll_Lock: {minus,equal}
 ## -------
 
 # Focus last desktop
-super + grave
+super + {grave,dead_grave}
 	bspc desktop --focus; bspc desktop --focus last
 
 # Focus the {next,previous} desktop
@@ -207,7 +224,7 @@ super + {1-8}
 	bspc desktop -f '^{1-8}'
 
 # Send node to the last desktop
-super + shift + grave
+super + shift + {grave,dead_grave}
 	bspc node -d last --focus
 
 # Send node to the {next,previous} desktop
@@ -243,11 +260,15 @@ super + a
 	next=$(( (active + nsinks - 1 {-,+} 1) % nsinks + 1)) && \
 	paswitch $(pactl list short sinks | head -$next | tail -1 | cut -f 1)
 
-# PrintScreen (Screenshot)
-{shift + ,_}Print
-	flameshot {gui ,full -c -p ~/Pictures/}
-
 # Adjust Screen Brightness
 {XF86MonBrightnessUp, XF86MonBrightnessDown}
 	xbacklight {-inc,-dec} 10
+
+# PrintScreen (Screenshot)
+{shift + ,_}Pause
+	flameshot {gui,full -c -p ~/Pictures/}
+
+# Reset Keyboard
+super + control + Return
+	setxkbmap us intl
 
