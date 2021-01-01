@@ -2,10 +2,24 @@
 filetypes = ["latex"]
 roots = ["header.tex", "out"]
 command = "/home/useredsa/bin/texlab"
-[language.java]
-filetypes = ["java"]
-roots = ["src"]
-command = "java-language-server"
+# [language.java]
+# filetypes = ["java"]
+# roots = ["src"]
+# command = "java-language-server"
+[language.julia]
+filetypes = ["julia"]
+roots = [".git"]
+command = "julia"
+args = [
+    "--startup-file=no",
+    "--history-file=no",
+    "-e",
+    """
+        using LanguageServer, LanguageServer.SymbolServer;
+        runserver();
+    """,
+    "."
+]
 [language.c_cpp]
 filetypes = ["c", "cpp"]
 roots = ["compile_commands.json", ".clangd"]

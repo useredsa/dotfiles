@@ -44,8 +44,10 @@ alias mkdir='mkdir -pv'
 alias myg++="g++ -O2 -Wall -std=c++17"
 alias mylatex="pdflatex --output-dir out"
 alias ks="kak-shell"
-alias o="xdg-open"
+alias o="xdg-open 2>/dev/null"
 alias open="xdg-open 2>/dev/null"
+alias ss="setsid 2>/dev/null"
+alias fpdf="fd --no-ignore-vcs --extension pdf | fzf | xargs -0 -r setsid -f xdg-open"
 alias tree="br -c :pt"
 # Add a battery status command if upower is installed
 if which upower 2>/dev/null 1>&2 ; then
@@ -76,6 +78,8 @@ c() {
     br --only-folders --cmd "$1;:cd"
 }
 
+
+bind -m emacs-standard '"\eOS": " \C-b\C-k \C-u`open . < /dev/null > /dev/null 2>&1 &`\e\C-e\er\C-m\C-y\C-h\e \C-y\ey\C-x\C-x\C-d"'
 
 [[ -f ~/.config/broot/launcher/bash/br ]] && source ~/.config/broot/launcher/bash/br
 [[ -f /usr/share/fzf/completion.bash ]] && source /usr/share/fzf/completion.bash

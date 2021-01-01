@@ -19,7 +19,7 @@ define-command texide -override -docstring "open ide windows" %{
     }
     $ zathura "out/%sh{basename $kak_bufname .tex}.pdf"
     dolphin
-    bspwm-repl
+    @
     nop %sh{
         bspc node --presel-dir cancel
     }

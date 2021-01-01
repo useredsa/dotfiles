@@ -1,31 +1,31 @@
 hook global WinSetOption filetype=(latex|julia) %{
-    map global insert <a-a> α
-    map global insert <a-b> β
-    # map global insert <a-c> γ
-    map global insert <a-d> δ
-    map global insert <a-e> ε
-    map global insert <a-f> φ
-    map global insert <a-g> γ
-    map global insert <a-h> η
-    map global insert <a-i> ι
-    # map global insert <a-j> π
-    map global insert <a-k> κ
-    map global insert <a-l> λ
-    map global insert <a-m> μ
-    # map global insert <a-n> ν
-    map global insert <a-o> ω
-    map global insert <a-p> π
-    # map global insert <a-q> π
-    map global insert <a-r> ρ
-    map global insert <a-s> σ
-    map global insert <a-t> τ
-    # map global insert <a-u> υ
-    # map global insert <a-v> π
-    # map global insert <a-w> π
-    map global insert <a-x> ξ
-    # map global insert <a-y> λ
-    map global insert <a-z> ζ
+    map window insert <a-a> α
+    map window insert <a-b> β
+    # map window insert <a-c> γ
+    map window insert <a-d> δ
+    map window insert <a-e> ε
+    map window insert <a-f> φ
+    map window insert <a-g> γ
+    map window insert <a-h> η
+    map window insert <a-i> ι
+    # map window insert <a-j> π
+    map window insert <a-k> κ
+    map window insert <a-l> λ
+    map window insert <a-m> μ
+    # map window insert <a-n> ν
+    map window insert <a-o> ω
+    map window insert <a-p> π
+    # map window insert <a-q> π
+    map window insert <a-r> ρ
+    map window insert <a-s> σ
+    map window insert <a-t> τ
+    # map window insert <a-u> υ
+    # map window insert <a-v> π
+    # map window insert <a-w> π
+    map window insert <a-x> ξ
+    # map window insert <a-y> λ
+    map window insert <a-z> ζ
 
-    map global insert <a-=> ≔
+    map window insert <a-=> ≠
 }
 

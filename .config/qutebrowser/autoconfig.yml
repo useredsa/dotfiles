@@ -35,10 +35,14 @@ settings:
     https://webchat.freenode.net: false
     https://www.facebook.com: false
     https://www.reddit.com: false
+  content.persistent_storage:
+    https://mega.nz: false
   content.register_protocol_handler:
     https://mail.google.com?extsrc=mailto&url=%25s: false
   downloads.position:
     global: bottom
+  downloads.remove_finished:
+    global: 60000
   editor.command:
     global:
     - kak-desktop

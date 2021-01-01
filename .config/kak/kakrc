@@ -1,141 +1,117 @@
-set global startup_info_version 20201901 # Only show update messages post v2020.08.04
 def config -docstring %{ config: Edit kakrc } %{ edit ~/.config/kak/kakrc }
-def update-config -docstring %{ update-config: Reload kakoune with the current buffers } %{
-    # source #TODO
-}
 
+# Basic Configuration ─────────────────────────────────────────────────────────
 
+set global startup_info_version 20201901 # Only show update messages post v2020.08.04
+set global scrolloff 1,5
+set global tabstop 4
+set global grepcmd 'rg --with-filename --column'
 
-# Plugin Management
-# ─────────────────
-require-module plug
-plug plug https://github.com/alexherbo2/plug.kak
-
-
-plug-core %{
-}
-
-
-# User Experience
-# ───────────────
-set-option global scrolloff 1,5
-# plug "caksoylar/kakoune-mysticaltutor"  theme
-# plug "alexherbo2/kakoune-dracula-theme" theme
-# plug "caksoylar/kakoune-snow" theme
-def -override colorscheme-gruvbox-alpha %{
-    colorscheme gruvbox-mod
-    set-face global PrimarySelection   "%opt{alpha_fg},%opt{alpha_blue}"
-    set-face global SecondarySelection "%opt{alpha_fg},%opt{alpha_blue}"
-}
-def -override colorscheme-gruvbox-transparent %{
-    # colorscheme-gruvbox-alpha
-    colorscheme gruvbox-mod
-    set-face global Default            "%opt{fg}"
-    set-face global PrimarySelection   "%opt{alpha_fg},%opt{blue}"
-    set-face global SecondarySelection "%opt{alpha_fg},%opt{blue}"
-    set-face global StatusLine         "%opt{fg}"
-    set-face global BufferPadding      "%opt{bg2}"
-}
 colorscheme-gruvbox-alpha
-
 
 add-highlighter global/ show-matching
 add-highlighter global/ number-lines
 add-highlighter global/ regex '(\b|%|//|#)? ?(TODO|FIXME|XXX|NOTE)\b' 0:default+rb
 
+hook global BufCreate .*\.(markdown|md|mkd) %{ set-option buffer filetype markdown }
+hook global BufCreate .*\.(latex) %{ set-option buffer filetype latex }
 
-
-# Extra Functionality plugins
-# ───────────────────────────
-plug-old kakoune-snippets "https://github.com/occivink/kakoune-snippets"
-plug prelude "https://github.com/alexherbo2/prelude.kak"
-#TODO plug-old "useredsa/pager.kak" noload do %{ ln -f bin/kak-man-pager bin/kak-pager ~/.local/bin }
-plug-old kak-ansi "https://github.com/eraserhd/kak-ansi"
-plug-old lsp "https://github.com/ul/kak-lsp" %{
-    hook global WinSetOption filetype=(c|cpp|latex) lsp-enable-window
-    lsp-auto-hover-enable
-    set global lsp_hover_anchor true
-    lsp-inlay-diagnostics-enable global
-    map global user l ': enter-user-mode lsp<ret>' -docstring 'Lsp mode'
+hook global WinSetOption filetype=(c|cpp|latex|markdown) %{
+    add-highlighter window/ wrap -indent -width 120 -marker …
 }
+
+# Plugins ─────────────────────────────────────────────────────────────────────
+
+require-module plug
+
+plug plug https://github.com/alexherbo2/plug.kak %{
+    define-command -docstring %{
+        plug-full-install: Installation of plugin plus execution of commands
+    } plug-full-install %{
+        plug-install
+        plug-execute connect make install
+        plug-execute lsp cargo build --release
+    }
+}
+
+plug-core %{
+}
+
+#TODO plug-old "useredsa/pager.kak" noload do %{ ln -f bin/kak-man-pager bin/kak-pager ~/.local/bin }
+
+plug-theme mysticaltutor "https://github.com/caksoylar/kakoune-mysticaltutor"
+
+plug-theme dracula "https://github.com/alexherbo2/kakoune-dracula-theme"
+
+plug-theme snow "https://github.com/caksoylar/kakoune-snow"
+
+plug prelude "https://github.com/alexherbo2/prelude.kak"
+
 plug terminal-mode "https://github.com/alexherbo2/terminal-mode.kak" %{
-    require-module kitty
-    require-module terminal-mode
     map global user t ': enter-user-mode terminal<ret>' -docstring 'Terminal mode'
     require-module x11
     set global termcmd 'kitty sh -c'
-    terminal-set global x11 x11-terminal x11-focus
 }
-#TODO make install
+
+plug bspwm tools/bspwm.kak %{
+    set -add global windowing_modules bspwm
+}
+
+plug auto-pairs "https://github.com/alexherbo2/auto-pairs.kak" %[
+    set-option global auto_pairs ( ) { }
+]
+
+plug smarttab "https://github.com/andreyorst/smarttab.kak" %{
+    set global softtabstop 4
+    hook global WinSetOption filetype=(c|cpp|asciidoctor|rust|markdown|kak|sh|perl|julia|latex|java) expandtab
+    hook global WinSetOption filetype=(makefile|gas) noexpandtab
+    hook global WinSetOption filetype=() smarttab
+}
+
+plug-old kakboard "https://github.com/lePerdu/kakboard" %{
+    hook global WinCreate .* %{ kakboard-enable }
+    # hook global WinDisplay .* %{ set window kakboard_copy_cmd "base64 | (printf '\033]52;c;!\033\a\033]52;c;'; cat; printf '\a') >""%val{client_env_TTY}""" }
+}
+
+plug-old kak-ansi "https://github.com/eraserhd/kak-ansi"
+
+plug-old lsp "https://github.com/ul/kak-lsp" %{
+    hook global WinSetOption filetype=(c|cpp|latex) lsp-enable-window
+
+    set global lsp_diagnostic_line_error_sign '║'
+    set global lsp_diagnostic_line_warning_sign '┊'
+    set global lsp_auto_highlight_references true
+    set global lsp_hover_anchor true
+    set global lsp_hover_max_lines 3
+    lsp-auto-hover-enable
+
+    # lsp-inlay-diagnostics-enable global
+    map global user l ': enter-user-mode lsp<ret>' -docstring 'Lsp mode'
+}
+
 plug connect "https://github.com/alexherbo2/connect.kak" %{
     require-module connect-rofi
     require-module connect-dolphin
     require-module connect-broot
     require-module connect-fzf
-    define-command fzf-files -override -params .. -file-completion -docstring 'Open files with fzf' %{
-        terminal-set global kitty kitty-terminal-tab kitty-focus
-        > :fzf-files %arg{@}
-        terminal-set global x11 x11-terminal x11-focus
-    }
-    define-command fzf-buffers -override -params ..1 -buffer-completion -docstring 'Open buffers with fzf' %{
-        terminal-set global kitty kitty-terminal-tab kitty-focus
-        > :fzf-buffers %arg{@}
-        terminal-set global x11 x11-terminal x11-focus
-    }
+    alias global popup kitty-terminal-tab
+    alias global repl-new bspwm-repl
 }
+
 plug explore "https://github.com/alexherbo2/explore.kak" %{
     alias global explore-files fzf-files
     alias global explore-buffers fzf-buffers
     explore-enable
 }
 
+plug batch "https://github.com/alexherbo2/batch.kak"
 
-
-# Custom mappings
-# ───────────────
-### Helper Functions
-##─────────────────
-define-command bam -params 4 -docstring %{
-    bam <scope> <key> <command> <insert_prefix>:
-    BinAry Map in normal and insert mode.
-    The given prefix is used before the command in insert mode.
-} %{
-    map "%arg{1}" normal "%arg{3}" "%arg{4}"
-    map "%arg{1}" insert "%arg{3}" "%arg{2}%arg{4}"
-}
-
-define-command home-expansion -hidden -docstring %{
-    home-expansion: expand to the begining of line/non blank depending on position
-} %{
-    eval -itersel %{ # Run each selection independently so that the
-        try %{       # test does not just remove failing selections.
-            # Check that the preceeding characters are horizontal whitespaces.
-            exec -draft %{ <a-h><a-k>\A\h+.\z<ret> }
-            exec Gh # If the previous line does not fail, go to begining of line.
-        } catch %{  # Othwerwise, go to first non blank character
-            exec Gi
-        }
-    }
-}
-
-define-command select-or-add-cursor -docstring %{
-    select a word under cursor, or add cursor on next occurrence of current selection
-} %{ execute-keys -save-regs '' %sh{
-    if [ $(expr $(echo $kak_selection | wc -m) - 1) -eq 1 ]; then
-        echo "<a-i>w*"
-    else
-        echo "*<s-n>"
-    fi
-}}
-
-## Shortcuts
-## ─────────
-# <c-g> - Creates/Removes a phantom group of selections
 plug-old kakoune-phantom-selection "https://github.com/occivink/kakoune-phantom-selection" %{
     # face global PhantomSelection "default,rgba:72637216+g"
     face global PhantomSelection "%opt{alpha_fg},%opt{alpha_purple}"
-        define-command -hidden -override -docstring "Creates a phantom group of selections" \
-    phantom-group %{
+    define-command -docstring %{
+        phantom-group: Creates a phantom group of selections
+    } -hidden phantom-group %{
         phantom-selection-add-selection
         map buffer normal <tab>   ': phantom-selection-iterate-next<ret>'
         map buffer insert <tab>   '<esc>: phantom-selection-iterate-next<ret>i'
@@ -144,8 +120,9 @@ plug-old kakoune-phantom-selection "https://github.com/occivink/kakoune-phantom-
         map buffer normal <c-g>   ': phantom-ungroup<ret>'
         map buffer insert <c-g>   '<esc>: phantom-ungroup<ret>i'
     }
-    define-command -hidden -override -docstring "Removes a phantom group of selections" \
-    phantom-ungroup %{
+    define-command -docstring %{
+        phantom-ungroup: Removes a phantom group of selections
+    } -hidden phantom-ungroup %{
         phantom-selection-select-all
         phantom-selection-clear
         unmap buffer normal <tab>   ': phantom-selection-iterate-next<ret>'
@@ -159,52 +136,16 @@ plug-old kakoune-phantom-selection "https://github.com/occivink/kakoune-phantom-
     map global insert <c-g> '<a-;>: phantom-group<ret><a-;><space>'
 }
 
-bam global ''      <c-q>    <esc>                         # <c-q> - Closer escape key
-bam global '<a-;>' <c-e>    ': e '                        # <c-e> - Edit file
-bam global '<a-;>' <c-E>    ': b '                        # <c-E> - Change buffer
-bam global '<a-;>' <c-w>    ': db<ret>'                   # <c-w> - Close buffer
-bam global '<a-;>' <c-s>    ': w<ret>'                    # <c-s> - Save file
-map global normal   '#'     ': comment-line<ret>'         # <#>   - Comment line(s)
-map global normal  '<a-#>'  ': comment-block<ret>'        # <a-#> - Comment block(s)
-bam global <esc>   <c-d>    ': select-or-add-cursor<ret>' # <c-d> - Auto select equal text
-map global normal  <home>   ': home-expansion<ret>;'
-map global insert  <home>   '<esc>: home-expansion<ret>;i'
-bam global <esc>   <s-home> ': home-expansion<ret>'
-map global normal    p      <a-p>                         # Switch p and <a-p>
-map global normal   <a-p>   p
-map global normal   <a-P>   P
-map global normal    P      <a-P>
-map global normal    ⓘ      <tab>
-map global normal    t      <a-i>                         # t        - Trim Object
-map global normal  <tab>    )                             # <tab>    - Rotate selections forward
-map global normal  <s-tab>  (                             # <s-tab>  - Rotate selections backwards
-bam global '<a-;>'   ㉆     ': bn<ret>'                   # <c-tab>  - Rotate selections forward
-bam global '<a-;>'   ㋟     ': bp<ret>'                   # <c-s-tab>- Rotate selections backwards
 plug move-line "https://github.com/alexherbo2/move-line.kak" %{
     bam global '<a-;>' <a-up>   ': move-line-above<ret>'  # <a-up>   - Move line up
     bam global '<a-;>' <a-down> ': move-line-below<ret>'  # <a-down> - Move line down
 }
+
 plug dynamic-matching "https://github.com/useredsa/dynamic-matching.kak" %{
     dynamic-matching-dmatch-conf
     map global normal m ': enter-user-mode dmatch<ret>'
     map global normal M ': enter-user-mode Dmatch<ret>'
     map global user   m ': enter-user-mode -lock dmatch<ret>' -docstring "dmatch mode"
-}
-
-hook global InsertCompletionShow .* %{ # <tab>/<s-tab> - Loop trhough completion selection
-    map window insert <tab>   <c-n>
-    map window insert <s-tab> <c-p>
-    map window insert <esc>   <c-o>
-}
-hook global InsertCompletionHide .* %{
-    unmap window insert <tab>   <c-n>
-    unmap window insert <s-tab> <c-p>
-    unmap window insert <esc>   <c-o>
-}
-
-plug-old kakoune-inc-dec 'https://gitlab.com/Screwtapello/kakoune-inc-dec' %{
-    map global normal <plus>  ': inc-dec-modify-numbers + %val{count}<ret>'  # <plus>  - Increment number
-    map global normal <minus> ': inc-dec-modify-numbers - %val{count}<ret>'  # <minus> - Decrement number
 }
 
 plug-old kakoune-mark "https://gitlab.com/fsub/kakoune-mark" %{
@@ -213,12 +154,10 @@ plug-old kakoune-mark "https://gitlab.com/fsub/kakoune-mark" %{
     bam global '<a-;>' <s-F8> ': mark-clear<ret>'                            # <s-F8> - Erase mark highlighters
 }
 
-
-# User Mode(s)
-# ────────────
-map global user e ': eval %val{selection}<ret>' -docstring 'Eval sel'
-map global user z <c-s>                         -docstring 'Save sels'
-map global user q ': q<ret>'                    -docstring 'Quit'
+plug-old kakoune-inc-dec 'https://gitlab.com/Screwtapello/kakoune-inc-dec' %{
+    map global normal <plus>  ': inc-dec-modify-numbers + %val{count}<ret>'  # <plus>  - Increment number
+    map global normal <minus> ': inc-dec-modify-numbers - %val{count}<ret>'  # <minus> - Decrement number
+}
 
 plug-old surround 'https://github.com/h-youhei/kakoune-surround' %|
     declare-user-mode surround
@@ -235,39 +174,16 @@ plug-old surround 'https://github.com/h-youhei/kakoune-surround' %|
     map global surround <<> ': surround<ret><'                -docstring 'surround with <>'
     map global user s       ': enter-user-mode surround<ret>' -docstring 'Surround mode'
 |
-plug-old easy-motion "https://github.com/danr/kakoune-easymotion" %{
-    set global em_jumpchars "0123456789abcdefghijklmnopqrstuvwxyz"
-    map global goto j '<esc>: easy-motion-j<ret>' -docstring "following lines"
-    map global goto k '<esc>: easy-motion-k<ret>' -docstring "previous lines"
-    map global goto w '<esc>: easy-motion-w<ret>' -docstring "following words"
-    map global goto b '<esc>: easy-motion-b<ret>' -docstring "previous words"
-}
 
-
-
-# Editor mechanics/behaviour
-# ──────────────────────────
-plug auto-pairs "https://github.com/alexherbo2/auto-pairs.kak" %[
-    set-option global auto_pairs ( ) { }
-]
 plug-old auto-percent 'https://github.com/Delapouite/kakoune-auto-percent'
-plug-old kakboard "https://github.com/lePerdu/kakboard" %{
-    hook global WinCreate .* %{ kakboard-enable }
-    # hook global WinDisplay .* %{ set window kakboard_copy_cmd "base64 | (printf '\033]52;c;!\033\a\033]52;c;'; cat; printf '\a') >""%val{client_env_TTY}""" }
-}
-set global tabstop 4
-plug smarttab "https://github.com/andreyorst/smarttab.kak" %{
-    set global softtabstop 4
-    hook global WinSetOption filetype=(c|cpp|asciidoctor|rust|markdown|kak|sh|perl|julia|latex) expandtab
-    hook global WinSetOption filetype=(makefile|gas) noexpandtab
-    hook global WinSetOption filetype=() smarttab
-}
+
 plug word-select "https://github.com/alexherbo2/word-select.kak" %{
     map global normal w     '<a-:>: word-select-next-word<ret>'
     map global normal <a-w> '<a-:>: word-select-next-big-word<ret>'
     map global normal b     '<a-:><a-;>: word-select-previous-word<ret>'
     map global normal <a-b> '<a-:><a-;>: word-select-previous-big-word<ret>'
 }
+
 plug-old text-objects "https://github.com/Delapouite/kakoune-text-objects" %{
     unmap global object v
     unmap global object d
@@ -276,105 +192,17 @@ plug-old text-objects "https://github.com/Delapouite/kakoune-text-objects" %{
     map global object a 'u' -docstring 'argument'
 }
 
+# Local kakrc ─────────────────────────────────────────────────────────────────
 
-
-# File Specific
-# ─────────────
-hook global BufCreate .*\.(markdown|md|mkd) %{ set-option buffer filetype markdown }
-hook global BufCreate .*\.(latex) %{ set-option buffer filetype latex }
-
-hook global WinSetOption filetype=(c|cpp|latex|markdown) %{
-    add-highlighter window/ wrap -indent -width 95 -marker …
+define-command -docstring %{
+    kakrc-local: Edit local kakrc
+} kakrc-local %{
+    edit .kakrc.local
 }
 
-hook global WinSetOption filetype=cf %{
-    hook -group ansi buffer BufReadFifo .* %{ eval -draft %sh{
-            printf "select %s\n" "$kak_hook_param"
-            printf "execute-keys 's\\\\r\\\\n<ret>hd<space>'"
-        }
-    }
-}
-
-hook global WinDisplay .*/cpc/.*\.cpp %{
-    define-command cf -override -params .. -docstring %{
-        cf [<arguments>]: cf-tool utility wrapper
-        All the optional arguments are forwarded to the cf utility
-    } %{ eval %sh{
-        output=$(mktemp -d "${TMPDIR:-/tmp}"/kak-cf.XXXXXXXX)/fifo
-        discard=$(mktemp -d "${TMPDIR:-/tmp}"/kak-cf.XXXXXXXX)/discard
-        mkfifo "${output}"
-
-        command="cf $@"
-        ( script -efq -c "$command" ${discard} >${output} & ) >/dev/null 2>&1 </dev/null
-
-        printf %s\\n "evaluate-commands -try-client  '$kak_opt_toolsclient' %{
-           edit! -fifo ${output} -scroll *stdin-1024*
-           set-option buffer filetype cf
-           set-option buffer make_current_error_line 0
-           hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r $(dirname ${output}) } }
-        }"
-    }}
-
-    define-command new-test-case -override -docstring %{
-        new-test-case: add a new testcase for cf-tool
-    } %{ evaluate-commands %sh{
-        i=1
-        while true; do
-            # printf "in$i.txt\n"
-            if [ ! -e "in$i.txt" ]; then
-                break
-            fi
-            i=$((i+1))
-        done
-
-        printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
-            edit! ans$i.txt
-            edit! in$i.txt
-        }"
-    }}
-
-    define-command import-library -override -params .. -docstring %{
-        import-library [<switches>]: Choose a library with rofi and insert it.
-        --strip	remove top definitions and main
-        --editor	open the selected file
-    } %{
-        execute-keys "!/home/useredsa/Desktop/cpc/useful_codes/lib_query.sh %arg{@}<ret>"
-    }
-
-    bam buffer '<a-;>' <c-w> ': cf test %val{buffile}<ret>' 
-    bam buffer '<a-;>' <F1>  ': new-test-case<ret>'         
-    bam buffer '<a-;>' <F3>  ': import-library --strip<ret>'
-}
-
-# Auto Save for qutebrowser
-# ─────────────────────────
-hook global BufCreate ".*qutebrowser-editor.*" %{
-    hook buffer NormalIdle ".*" 'w'
-    hook buffer InsertIdle ".*" 'w'
-}
-
-#TODO con shift se entra en un modo que es extender
-# Automatic group of changes in insert mode
-declare-option -hidden int last_grouping
-declare-option int grouping_delay 4
-hook global ModeChange ".*:insert" %{
-    set buffer last_grouping %sh{ date +%s }
-}
-# hook global InsertChar "\s" %{ eval %sh{
-#     if [ $(($kak_opt_last_grouping + $kak_opt_grouping_delay)) -le $(date +%s) ]; then
-#         printf "set buffer last_grouping $(date +%s)\n"
-#         printf "exec <c-u>\n"
-#     fi
-# }}
-
-# Source a local project kak config if it exists
-# Make sure it is set as a kak filetype
 hook global BufCreate (.*/)?(\.kakrc\.local) %{
     set-option buffer filetype kak
 }
+
 try %{ source .kakrc.local }
 
-plug bspwm tools/bspwm.kak %{
-    set -add global windowing_modules bspwm
-    require-module connect-bspwm
-}
