@@ -24,5 +24,3 @@ args = [
 filetypes = ["c", "cpp"]
 roots = ["compile_commands.json", ".clangd"]
 command = "clangd"
-# kak-lsp does not support newText https://github.com/ul/kak-lsp/issues/40
-args = ["--init={\"completion\":{\"detailedLabel\":false}}"]

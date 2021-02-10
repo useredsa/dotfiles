@@ -1,0 +1,63 @@
+KEYMAP (All Commands involve the Super key)
+
+┏━━━━━━━┓  ┏━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┓   ┏━━━━━━━┓
+┃ ESC   ┃  ┃ F1    ┃ F2    ┃ F3    ┃ F4    ┃ F5    ┃ F6    ┃ F7    ┃ F8    ┃ F9    ┃ F10   ┃ F11   ┃ F12   ┃   ┃ Print ┃
+┃       ┃  ┃  Help ┃  Desk.┃ Layout┃ Close ┃ Reload┃ Flags ┃       ┃       ┃ Status┃       ┃       ┃ Edit  ┃   ┃       ┃
+┃       ┃  ┃  Menu ┃  Menu ┃  Menu ┃ Win   ┃ Sxhkd ┃ Menu  ┃       ┃       ┃ Notif.┃       ┃       ┃ Config┃   ┃       ┃
+┗━━━━━━━┛  ┗━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┛   ┗━━━━━━━┛
+
+┌───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┲━━━━━━━━━━━━━━┓
+│ `   ⁺ │ 1   ⁺ │ 2   ⁺ │ 3   ⁺ │ 4   ⁺ │ 5   ⁺ │ 6   ⁺ │ 7   ⁺ │ 8   ⁺ │ 9     │ 0     │       │       ┃ ⇤            ┃
+│ Last  │ Desk. │ Desk. │ Desk. │ Desk. │ Desk. │ Desk. │ Desk. │ Desk. │       │       │       │       ┃     Lock     ┃
+│Desktop│       │       │       │       │       │       │       │       │       │       │       │       ┃              ┃
+┢━━━━━━━┷━━━┱───┴───┬───┴───┬───┴───┬───┴───┬───┴───┬───┴───┬───┴───┬───┴───┬───┴───┬───┴───┬───┴───┬───┺━━━┳━━━━━━━━━━┫
+┃ ↹       ⁿ ┃ q   ⁺ │ w   ⁺ │ e   ⁺ │ r     │ t     │ y     │ u     │ i   ⁿ │ o   ⁿ │ p   ⁿ │ [   ⁺ │ ]   ⁺ ┃          ┃
+┃    Last   ┃ Third │ Prim. │  Sec. │ Rotate│ Tiled │ Clip. │ Unhide│ Newer │ Older │  Prev.│  Prev.│  Next ┃ ⏎ Launch ┃
+┃    Window ┃  Mon. │  Mon. │  Mon. │       │⇧Ps.Ti.│  Mgr. │       │       │       │       │  Desk.│  Desk.┃ Terminal ┃
+┣━━━━━━━━━━━┻━┱─────┴─┬─────┴─┬─────┴─┬─────┴─┬─────┴─┬─────┴─┬─────┴─┬─────┴─┬─────┴─┬─────┴─┬─────┴─┬─────┺━┓        ┃
+┃ ⇬           ┃ a   ⁿ │ s     │ d     │ f     │       │ h   ⁿ │ j   ⁿ │ k   ⁿ │ l   ⁿ │ ;     │       │ |     ┃        ┃
+┃             ┃  Root │ Set   │  Run  │ Full. │       │  West │ South │ North │  East │ Focus │       │  Flip ┃        ┃
+┃             ┃  Node │ Flags │  Menu │⇧Float.│       │     ← │     ↓ │     ↑ │     → │Dscdnt.│       │       ┃        ┃
+┣━━━━━━━━━┳━━━┹───┬───┴───┬───┴───┬───┴───┬───┴───┬───┴───┬───┴───┬───┴───┬───┴───┬───┴───┬───┴───┲━━━┷━━━━━━━┻━━━━━━━━┫
+┃ Shift   ┃       │ x   ¹ │ c   ² │ v   ³ │ b   ⁿ │ n   ⁿ │ m     │       │       │       │ ?     ┃ Shift              ┃
+┃         ┃       │  Cut  │  Copy │ Paste │Biggest│  Next │Scratch│       │       │       │  Help ┃                    ┃
+┃ ⇧       ┃       │  Node │  Node │ Node. │       │       │  App  │       │       │       │  Menu ┃ ⇧                  ┃
+┣━━━━━━━━━┻┳━━━━━━┷━━━┳━━━┷━━━━━┱─┴───────┴───────┴───────┴───────┴───────┴─┲━━━━━┷━━━━┳━━┷━━━━━━━╋━━━━━━━━━┳━━━━━━━━━━┫
+┃          ┃          ┃         ┃                                           ┃          ┃          ┃         ┃          ┃
+┃          ┃          ┃         ┃               Scratch Terminal            ┃          ┃          ┃         ┃          ┃
+┃ Ctrl     ┃ Super    ┃ Alt     ┃                                           ┃          ┃          ┃         ┃ Ctrl     ┃
+┗━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━┹───────────────────────────────────────────┺━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━┻━━━━━━━━━━┛
+
+⁺: target desktop/monitor of focus change,
+          shifted will also send the current node there,
+          alt will instead only send the current node there.
+ⁿ: target node of a focus change,
+          shifted will instead swap with current node,
+          alt will instead send the current selected node.
+¹: Cutting is the same as marking and hiding.
+²: Copying is the same as marking.
+³: Pasting sends a marked node to the focused node (unhiding it if necessary).
+
+Least Used:
+super + {i,o}
+
+
+Other
+
+super + shift + q: Quit bspwm
+super + shift + r: Restart bspwm
+super + ctrl + {h,j,k,l}: Paste into direction or preselect direction
+super + ctrl + {0-9}: Paste with size or preselect size
+Print: Save a screenshot to the Pictures folder
+shift + Print: Run the screenshot app
+Menu: and let everything play
+
+Left
+super + ctrl + dir/space
+super + {less,greater} cicle desktop
+
+Comments
+Biggest is great for specific layouts, because the master window is usually the biggest.
+
+mark-pattern toggle '\S+ +ⁿ'
+mark-pattern toggle '\S+ +⁺'

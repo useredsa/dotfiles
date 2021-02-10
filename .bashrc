@@ -36,10 +36,14 @@ export TTY="$(tty)"
 alias ls='ls --color=auto'
 alias la='ls -a'
 alias ll='ls -alF'
+alias mkdir='mkdir -pv'
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
-alias mkdir='mkdir -pv'
+alias du='dust'
+alias top='htop'
+alias tree="br -c :pt"
+alias cal="cal -m"
 
 alias myg++="g++ -O2 -Wall -std=c++17"
 alias mylatex="pdflatex --output-dir out"
@@ -48,7 +52,9 @@ alias o="xdg-open 2>/dev/null"
 alias open="xdg-open 2>/dev/null"
 alias ss="setsid 2>/dev/null"
 alias fpdf="fd --no-ignore-vcs --extension pdf | fzf | xargs -0 -r setsid -f xdg-open"
-alias tree="br -c :pt"
+alias fimg="fd --no-ignore-vcs --e png -e jpg  | fzf | xargs -0 -r setsid -f xdg-open"
+alias copy="xsel -ib"
+
 # Add a battery status command if upower is installed
 if which upower 2>/dev/null 1>&2 ; then
     alias batstat="upower -i $(upower -e | grep BAT) | grep -E \"state|time (to\ full|to\ empty)|percentage\""

@@ -1,0 +1,21 @@
+# Activate set up depending on the number of monitors
+# xrandr --listactivemonitors outputs n+1 lines when there are n monitors
+if [ $(xrandr --listactivemonitors | wc -l) == 3 ]; then
+    ./.screenlayout/2-mons.sh
+    bspc monitor primary -d 1 2 3
+    bspc monitor ^2 -d 4
+    bspc desktop --focus 2
+    bspc desktop --focus 1
+else
+	./.screenlayout/L-setup.sh
+    bspc monitor primary -d 1 2 3
+    bspc monitor ^2 -d 4
+    bspc monitor ^3 -d 5
+    bspc desktop --focus 2
+    bspc desktop --focus 1
+fi
+
+bspc rule --add TelegramDesktop monitor=^2 --one-shot
+bspc rule --add discord monitor=^2         --one-shot
+bspc rule --add zoom monitor=^2            --one-shot
+bspc rule --add akregator monitor=^2       --one-shot

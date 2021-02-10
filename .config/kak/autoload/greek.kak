@@ -6,6 +6,7 @@ hook global WinSetOption filetype=(latex|julia) %{
     map window insert <a-e> ε
     map window insert <a-f> φ
     map window insert <a-g> γ
+    map window insert <a-G> Γ
     map window insert <a-h> η
     map window insert <a-i> ι
     # map window insert <a-j> π
@@ -15,6 +16,7 @@ hook global WinSetOption filetype=(latex|julia) %{
     # map window insert <a-n> ν
     map window insert <a-o> ω
     map window insert <a-p> π
+    map window insert <a-P> Π
     # map window insert <a-q> π
     map window insert <a-r> ρ
     map window insert <a-s> σ

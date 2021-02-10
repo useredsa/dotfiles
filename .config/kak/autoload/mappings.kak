@@ -60,6 +60,16 @@ map global normal  <tab>    )                             # <tab>    - Rotate se
 map global normal  <s-tab>  (                             # <s-tab>  - Rotate selections backwards
 bam global '<a-;>'   ㉆     ': bn<ret>'                   # <c-tab>  - Rotate selections forward
 bam global '<a-;>'   ㋟     ': bp<ret>'                   # <c-s-tab>- Rotate selections backwards
+map global view      f      '<a-;><c-i>'                   -docstring "Jump Forward"
+map global view      g      '<a-;><c-o>'                   -docstring "Jump Backward"
+# map global view      v      'vm<esc>'                      -docstring "Center view"
+
+# Trying out
+map global normal f <a-a>
+map global normal F <a-i>
+map global normal e f
+map global normal E F
+
 hook global InsertCompletionShow .* %{ # <tab>/<s-tab> - Loop trhough completion selection
     map window insert <tab>   <c-n>
     map window insert <s-tab> <c-p>

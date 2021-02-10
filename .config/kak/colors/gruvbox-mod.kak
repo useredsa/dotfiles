@@ -26,7 +26,7 @@ declare-option str fg3             "rgb:bdae93"
 declare-option str fg4             "rgb:a89984"
 
 declare-option str alpha_fg        "rgba:ebdbb2af"
-declare-option str alpha_blue      "rgba:83a598af"
+declare-option str alpha_blue      "rgba:83a5a86f"
 declare-option str alpha_purple    "rgba:a3566baf"
 
 # Reference

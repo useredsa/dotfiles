@@ -16,8 +16,12 @@ add-highlighter global/ regex '(\b|%|//|#)? ?(TODO|FIXME|XXX|NOTE)\b' 0:default+
 hook global BufCreate .*\.(markdown|md|mkd) %{ set-option buffer filetype markdown }
 hook global BufCreate .*\.(latex) %{ set-option buffer filetype latex }
 
+define-command wraphl -params 1 %{
+    add-highlighter -override window/wrap wrap -indent -marker … -width %arg{1}
+}
+
 hook global WinSetOption filetype=(c|cpp|latex|markdown) %{
-    add-highlighter window/ wrap -indent -width 120 -marker …
+    wraphl 120
 }
 
 # Plugins ─────────────────────────────────────────────────────────────────────
@@ -30,7 +34,7 @@ plug plug https://github.com/alexherbo2/plug.kak %{
     } plug-full-install %{
         plug-install
         plug-execute connect make install
-        plug-execute lsp cargo build --release
+        plug-execute lsp make build install
     }
 }
 
@@ -75,6 +79,7 @@ plug-old kakboard "https://github.com/lePerdu/kakboard" %{
 
 plug-old kak-ansi "https://github.com/eraserhd/kak-ansi"
 
+set global lsp_cmd "kak-lsp -s %val{session} -vvv --log /tmp/kak-lsp.log"
 plug-old lsp "https://github.com/ul/kak-lsp" %{
     hook global WinSetOption filetype=(c|cpp|latex) lsp-enable-window
 
@@ -143,8 +148,8 @@ plug move-line "https://github.com/alexherbo2/move-line.kak" %{
 
 plug dynamic-matching "https://github.com/useredsa/dynamic-matching.kak" %{
     dynamic-matching-dmatch-conf
-    map global normal m ': enter-user-mode dmatch<ret>'
-    map global normal M ': enter-user-mode Dmatch<ret>'
+    map global normal ) ': enter-user-mode dmatch<ret>'
+    map global normal ( ': enter-user-mode Dmatch<ret>'
     map global user   m ': enter-user-mode -lock dmatch<ret>' -docstring "dmatch mode"
 }
 
@@ -179,6 +184,7 @@ plug-old auto-percent 'https://github.com/Delapouite/kakoune-auto-percent'
 
 plug word-select "https://github.com/alexherbo2/word-select.kak" %{
     map global normal w     '<a-:>: word-select-next-word<ret>'
+    map global normal W     'E'
     map global normal <a-w> '<a-:>: word-select-next-big-word<ret>'
     map global normal b     '<a-:><a-;>: word-select-previous-word<ret>'
     map global normal <a-b> '<a-:><a-;>: word-select-previous-big-word<ret>'

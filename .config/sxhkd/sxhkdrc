@@ -1,4 +1,4 @@
-### Make sxhkd reload its configuration files:
+## Make sxhkd reload its configuration files:
 super + F5
 	pkill -USR1 -x sxhkd
 
@@ -11,20 +11,51 @@ super + F5
 ## ------------------
 
 # Run menu
-super + p
-	rofi -show run -monitor -5
+super + d
+	rofi -show run -monitor -1
 
 # Open a terminal
 super + Return
 	kitty
 
+@Super_L
+	bspc node --focus
+
+super + Tab
+	bspc wm -h off; \
+	bspc node older.local --focus || ( \
+		bspc wm -h on; \
+		bspc node newest.local --focus; \
+	); \
+	bspc wm -h on
+
+# super + g
+# 	bspc wm -h off; \
+# 	bspc node 'older.local.window.!hidden' --focus; \
+# 	bspc wm -h on;
+
+# super + y
+# 	bspc wm -h off; \
+# 	bspc node 'newer.local.window.!hidden' --focus; \
+# 	bspc wm -h on;
+
+super + {_,shift + }g
+	{_, bspc node --to-monitor ^2 --activate;} \
+	bspc desktop primary:focused --swap ^2:focused
+
 # Open the file browser
-super + e
-	dolphin
+# super + m; e
+# 	( if [ "$(xprop WM_CLASS -id $(xdo id) | cut -d '"' -f 4)" = kitty ]; then \
+# 		dir=a \
+# 	else \
+# 		dir=b \
+# 	fi; \
+# 	printf b$dir \
+# 	) >/home/useredsa/err
 
 # Open the audio manager
-super + v
-	mate-volume-control -p output
+# super + v
+# 	mate-volume-control -p output
 
 ## At-hand applications (scratchpad-workspace like)
 ## ------------------------------------------------
@@ -43,15 +74,20 @@ super + m; s
 
 # Terminal
 super + space
-	export ALTPS1='[\d \t \W]\$ ' ; bspc-toggle-visibility.sh ScratchTerm --state floating --instancename "alacritty --class ScratchTerm,Alacritty"
+	export ALTPS1='\D\{%d-%b\} \t \W ' ; bspc-toggle-visibility.sh ScratchTerm --state floating --instancename "alacritty --class ScratchTerm,Alacritty"
 
 # Zoom Chat
 super + m; c
-	bspc node $(xdotool search --name Chat) --flag hidden
+	bspc node $(xdotool search --name Chat || printf none) --flag hidden
 
 # Akregator
 super + m; f
 	bspc-toggle-visibility.sh akregator --state fullscreen
+
+# Clipboard Manager
+super + {_,shift + }y
+	bspc rule --add \* --one-shot state=floating && \
+	kitty clipcat-menu {insert,remove}
 
 
 
@@ -62,7 +98,7 @@ super + m; f
 ## -------
 
 # {Quit,Restart} bspwm
-super + shift + {q,r}
+super + shift + {Escape,r}
 	bspc {quit,wm -r}
 
 ## Function Menus
@@ -71,18 +107,18 @@ super + shift + {q,r}
 # Help Menu
 super + {F1,question}
 	/home/useredsa/.config/sxhkd/conf-parser < /home/useredsa/.config/sxhkd/sxhkdrc | \
-	rofi -dmenu -p help -i -markup-rows -monitor -5 -lines 5 -columns 1 | \
-	grep -oE -e 'super[^#]*' | tr -d ' ' | tr ';' ' ' | xargs xdotool key
+	rofi -dmenu -p help -i -markup-rows -monitor -1 -lines 5 -columns 1 | \
+	rg -o --pcre2 '\t[^\t]+(?=</small>)' | sh
 
 # Desktops menu
 super + F2
-	bspc desktop $(bspc query --desktops --names | rofi -dmenu -monitor -5) --focus
+	bspc desktop $(bspc query --desktops --names | rofi -dmenu -monitor -1) --focus
 
 
 # Layout Menu
 super + F3
 	printf "tall\nrtall\nwide\nrwide\neven\ntiled\nmonocle\n" | \
-	rofi -dmenu -monitor -5 -lines 1 -columns 7 |               \
+	rofi -dmenu -monitor -1 -lines 1 -columns 7 |               \
 	xargs bsp-layout set
 
 # super + F4 is close
@@ -91,16 +127,29 @@ super + F3
 # Node flags Menu
 super + F6
 	bspc node --flag $(                                                          \
-	printf "hidden\nsticky\nprivate\nlocked\nmarked\n" | rofi -dmenu -monitor -5 \
+	printf "hidden\nsticky\nprivate\nlocked\nmarked\n" | rofi -dmenu -monitor -1 \
 	)
+
+# Status notification
+super + F9
+	( date; batstat ) | \
+	xargs -0 notify-send -h string:x-canonical-private-synchronous:my-notification
+
+# Edit Configuration
+super + F12
+	kitty kak ~/.config/bspwm/bspwmrc ~/.config/sxhkd/sxhkdrc
 
 
 ## Nodes
 ## -----
 
-# {Focus,Swap} with an adjacent node
-super + {_,shift + }{h,j,k,l}
-	bspc node --{focus,swap} {west,south,north,east}
+# {Focus,Swap with,Send to} an adjacent node
+super + {_,shift + ,alt +}{h,j,k,l}
+	bspc node {--focus,--swap,--to-node} {west,south,north,east}
+
+# Send to an adjacent node
+super + alt + {h,j,k,l}
+	bspc node --to-node {west,south,north,east}
 
 # {Close,Kill} window
 super + {F4,shift + F4}
@@ -108,23 +157,27 @@ super + {F4,shift + F4}
 
 # Focus last node
 super + Tab
-	bspc node --focus last.local
-	# rofi -show window -monitor -5 -selected-row 2                                    \
+	bspc node --focus last.window.local
+	# rofi -show window -monitor -1 -selected-row 2                                    \
 	# -kb-accept-entry '!Super-Tab,!Super+Super_L'    -kb-cancel 'Super+Escape,Escape' \
 	# -kb-row-up 'Super+ISO_Left_Tab,Super+Shift+Tab' -kb-row-down 'Super+Tab'
 	# https://github.com/davatorium/rofi/issues/38
 
 # Focus the {newer,older} node in the history
-super + {i,o}
-	bspc wm -h off; bspc node {newer,older} --focus; bspc wm -h on
+super + {_,shift + ,alt + }{i,o}
+	bspc wm -h off; bspc node {--focus,--swap,--to-node} {newer,older}.local; bspc wm -h on
 
 # Set the node state
-super + {t,f,shift + t,shift + f}
-	bspc node --state {\~tiled,\~fullscreen,\~pseudo_tiled,\~floating}
+super + {t,shift + t,shift + f}
+	bspc node --state {\~tiled,\~pseudo_tiled,\~floating}
 
 # Set the node flags
 super + s; {h,s,p,l,m}
 	bspc node --flag {hidden,sticky,private,locked,marked}
+
+# Set/Unset the monocle layout
+super + f
+	bspc desktop --layout next
 
 
 ## Marking and receptacles
@@ -140,24 +193,36 @@ super + c
 
 # Paste the current node
 super + v
-	bspc node any.marked  --flag hidden=off --to-node 'any.!automatic' --focus
+	bspc node any.marked  --flag hidden=off -d focused --focus
 
 # Set a preselection and try pasting window
 super + ctrl + {h,j,k,l}
 	bspc node --presel-dir {west,south,north,east}; \
 	bspc node any.marked --flag hidden=off --to-node 'any.!automatic' --focus
 
+# Set a preselection size and try pasting window
+super + ctrl + {1-9}
+	bspc node --presel-ratio 0.{0-9}; \
+	bspc node any.marked --flag hidden=off --to-node 'any.!automatic' --focus
+
 # Remove preselection/receptacles
 super + ctrl + space
 	bspc node --presel-dir cancel
 
-# Swap the current node and the biggest local node
-super + b
-	bspc node -s biggest.local
+# {Focus,Swap with,Send to} the biggest local node
+super + {_,shift + ,alt + }b
+	biggest=$(bspc query -N -n biggest.local); \
+	focused=$(bspc query -N -n focused); \
+	target=$( [ $biggest != $focused ] && printf biggest || printf last ).local; \
+	bspc node {--focus,--swap,--to-node} $target
 
-# Unhide (the newer) hidden node
-super + u
-	bspc node any.local.hidden.window --flag hidden --focus
+# {Focus,Swap with,Send to} the previous local window
+super + {_,shift + ,alt + }p
+	bspc node {--focus,--swap,--to-node} 'prev.window.local.!hidden'
+
+# {Focus,Swap with,Send to} the next local window
+super + {_,shift + ,alt + }n
+	bspc node {--focus,--swap,--to-node} 'next.window.local.!hidden'
 
 # Unhide (the newer) hidden node
 super + u
@@ -172,13 +237,23 @@ super + d
 ## Refactoring
 ## -----------
 
+# Swap with brother node
+super + bar
+	bspc node --swap @brother
+
+# Rotate parent node
+super + r
+	bspc node @parent --rotate 90
+
 # Enter Refactoring Menu
 Menu
-	bspc config border_width $((BSPWM_BORDER_WIDTH+5)) && xdotool key Scroll_Lock
+	bspc config border_width $((BSPWM_BORDER_WIDTH+5)) && \
+	xdotool key Scroll_Lock && \
+	notify-send 'Refactoring Menu'
 
 # Exit Refactoring Menu
 Scroll_Lock: Menu
-	bspc config border_width 1 && xdotool key Escape
+	bspc config border_width $BSPWM_BORDER_WIDTH && xdotool key Escape
 
 Scroll_Lock: super + {_,shift + }{h,j,k,l}
 	bspc node --{focus,swap} {west,south,north,east}
@@ -197,7 +272,11 @@ Scroll_Lock: shift + {h,j,k,l}
 
 # Balance nodes
 Scroll_Lock: b
-	bspc node @/ --balance
+	bspc node --balance
+
+# Equalize nodes
+Scroll_Lock: e
+	bspc node --equalize
 
 # Rotate parent
 Scroll_Lock: paren{left,right}
@@ -215,33 +294,56 @@ Scroll_Lock: {minus,equal}
 super + {grave,dead_grave}
 	bspc desktop --focus; bspc desktop --focus last
 
+# {Carry,Send} node to the last desktop
+super + {shift,alt} + {grave,dead_grave}
+	follow={--follow,--activate}; \
+	bspc node -d last $follow
+
 # Focus the {next,previous} desktop
 super + bracket{left,right}
-	bspc wm -h off; bspc desktop -f {prev,next}; bspc wm -h on
+	bspc wm -h off; bspc desktop --focus {prev,next}.local; bspc wm -h on
+
+# {Carry,Send} node to the {next,previous} desktop
+super + {shift,alt} + bracket{left,right}
+	follow={--follow,--activate}; \
+	bspc node -d {prev,next}.local $follow
 
 # Focus the given desktop
 super + {1-8}
 	bspc desktop -f '^{1-8}'
 
-# Send node to the last desktop
-super + shift + {grave,dead_grave}
-	bspc node -d last --focus
-
-# Send node to the {next,previous} desktop
-super + shift + bracket{left,right}
-	bspc node -d {prev,next} --follow
-
-# Send to the given desktop
-super + shift + {1-8}
-	bspc node -d '^{1-8}' --focus
+# {Carry,Send} node to the given desktop
+super + {shift,alt} + {1-8}
+	follow={--follow,--activate}; \
+	bspc node -d '^{1-8}' $follow
 
 # Cycle Desktop's Tree
 super + {less,greater}
 	bspc node @/ --circulate {backward,forward}
 
-# Focus root node in the current desktop
-super + a
-	bspc node -f @/
+# {Focus,Swap with,Send to} the root node in the current desktop
+super + {_,shift + ,alt + }a
+	bspc node {--focus @/,--swap @/,--to-node @/ ; bspc node --swap @brother}
+
+# Restrict selection to current node
+super + semicolon
+	bspc node newest.window.descendant_of --focus || \
+	bspc node any.window.descendant_of --focus || \
+	notify-send 'Error in sxhkd script'
+
+
+
+## Desktop
+## -------
+
+# Focus {third,primary,second} monitor
+super + {q,w,e}
+	bspc monitor {^3,primary,^2} --focus
+
+# {Carry,Send} node to {third,primary,second} monitor
+super + {shift,alt} + {q,w,e}
+	follow={--follow,--activate}; \
+	bspc node focused --to-monitor {^3,primary,^2} $follow
 
 
 
@@ -250,25 +352,43 @@ super + a
 
 # Volume keys
 {XF86AudioLowerVolume, XF86AudioRaiseVolume, XF86AudioMute}
-	amixer sset Master {3%-,3%\+,toggle} \
-	#| grep -E "[0-9]+%" | head -c -1 | xargs --null rofi -e
+	amixer sset Master {3%-,3%\+,toggle} | grep -E "[0-9]+%" | head -c -1 | \
+	xargs -0 notify-send -h string:x-canonical-private-synchronous:my-notification
 
 # Switch between audio outputs
 {XF86AudioPrev, XF86AudioNext}
 	nsinks=$(pactl list short sinks | wc -l) && \
 	active=$(pactl list short sinks | grep RUNNING -n | cut -f 1 -d :) && \
 	next=$(( (active + nsinks - 1 {-,+} 1) % nsinks + 1)) && \
-	paswitch $(pactl list short sinks | head -$next | tail -1 | cut -f 1)
+	paswitch $(pactl list short sinks | head -$next | tail -1 | cut -f 1); \
+	pactl list short sinks | grep RUNNING -n | cut -f 2 | \
+	xargs -0 notify-send -h string:x-canonical-private-synchronous:my-notification
+
+# Restart pulseaudio
+XF86AudioPlay
+	pulseaudio --kill && pulseaudio --start && \
+	notify-send "PulseAudio Restarted" "You may need to restart some applications"
 
 # Adjust Screen Brightness
 {XF86MonBrightnessUp, XF86MonBrightnessDown}
 	xbacklight {-inc,-dec} 10
 
-# PrintScreen (Screenshot)
+# Print (Screenshot)
 {shift + ,_}Pause
-	flameshot {gui,full -c -p ~/Pictures/}
+	flameshot {gui,screen -c -p ~/Pictures/}
+
+# PrintScreen (Screenshot)
+{shift + ,_}Print
+	flameshot {gui,screen -c -p ~/Pictures/}
 
 # Reset Keyboard
 super + control + Return
 	setxkbmap us intl
+
+### Graphics Tablet Shortcuts
+### ============
+
+# Focus Graphics Tablet Desktop
+ctrl + shift + F1
+	bspc monitor HDMI-2 --focus
 

@@ -5,7 +5,8 @@ define-command maketex -override -docstring "Make LaTex" %{
         nop %sh{ bspc node "$kak_opt_replwin#@parent" --ratio 0.6 }
         bspwm-send-text "%opt{makecmd} ""%val{bufname}"" && bspc node ""%opt{replwin}#@parent"" --ratio %opt{repl_ratio}"
     } catch %{
-        make "%val{bufname}"
+        eval -draft make "%val{bufname}"
+        echo "Compiling..."
     }
 }
 
