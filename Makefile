@@ -1,6 +1,6 @@
 .POSIX:
 
-.PHONY: acpilight alacritty bash broot bspwm cf dolphin env kak kak-lsp kitty mime picom qutebrowser rofi sxhkd xbacklight xconf zathura
+.PHONY: acpilight alacritty bash broot bspwm cf clipcat dolphin env kak kak-lsp kitty mime picom qutebrowser rofi sxhkd xbacklight xconf zathura
 
 xbacklight:
 	# Don't symmlink across multiple partitions for udev rules!
@@ -25,6 +25,9 @@ bspwm:
 
 picom:
 	ln -sf "$$(pwd)/.config/picom" "$$HOME/.config/"
+
+clipcat:
+	ln -sf "$$(pwd)/.config/clipcat" "$$HOME/.config/"
 
 cf:
 	ln -sf "$$(pwd)/.cf" "$$HOME"
