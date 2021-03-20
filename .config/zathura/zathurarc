@@ -1,3 +1,7 @@
+# General Settings
+
+set selection-clipboard clipboard
+
 # (La)tex synctex settings
 
 set synctex true

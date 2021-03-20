@@ -19,7 +19,7 @@ settings:
   bindings.commands:
     global:
       insert:
-        <Ctrl+q>: leave-mode
+        <Ctrl+q>: mode-leave
       normal:
         <Ctrl+Shift+Tab>: tab-prev
         <Ctrl+Tab>: tab-next
@@ -32,6 +32,8 @@ settings:
   colors.webpage.prefers_color_scheme_dark:
     global: true
   content.notifications:
+    https://agar.io: false
+    https://tetr.io: false
     https://webchat.freenode.net: false
     https://www.facebook.com: false
     https://www.reddit.com: false

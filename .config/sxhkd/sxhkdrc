@@ -84,6 +84,10 @@ super + m; c
 super + m; f
 	bspc-toggle-visibility.sh akregator --state fullscreen
 
+# Xournalpp
+super + m; x
+	bspc-toggle-visibility.sh scratch-paper "xournalpp --class=scratch-paper" --state floating
+
 # Clipboard Manager
 super + {_,shift + }y
 	bspc rule --add \* --one-shot state=floating && \
@@ -178,6 +182,16 @@ super + s; {h,s,p,l,m}
 # Set/Unset the monocle layout
 super + f
 	bspc desktop --layout next
+
+# Snap floating window to the {left,right} screen border
+super + {Left,Right}
+	xdo move -x {0,960} -y 0 && \
+	xdo resize -w $((960-2*$BSPWM_BORDER_WIDTH)) -h $((1080-2*$BSPWM_BORDER_WIDTH))
+
+# Maximize floating window
+super + Up
+	xdo move -x 0 -y 0 && \
+	xdo resize -w $((1920-2*$BSPWM_BORDER_WIDTH)) -h $((1080-2*$BSPWM_BORDER_WIDTH))
 
 
 ## Marking and receptacles
@@ -333,7 +347,7 @@ super + semicolon
 
 
 
-## Desktop
+## Monitor
 ## -------
 
 # Focus {third,primary,second} monitor

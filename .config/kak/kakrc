@@ -92,6 +92,7 @@ plug-old lsp "https://github.com/ul/kak-lsp" %{
 
     # lsp-inlay-diagnostics-enable global
     map global user l ': enter-user-mode lsp<ret>' -docstring 'Lsp mode'
+    map global user n ': lsp-find-error --include-warnings<ret>'
 }
 
 plug connect "https://github.com/alexherbo2/connect.kak" %{
