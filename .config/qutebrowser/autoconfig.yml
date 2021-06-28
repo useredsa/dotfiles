@@ -29,14 +29,16 @@ settings:
         gt: set-cmd-text -s :tab-focus
   colors.webpage.bg:
     global: white
-  colors.webpage.prefers_color_scheme_dark:
-    global: true
-  content.notifications:
+  colors.webpage.preferred_color_scheme:
+    global: dark
+  content.notifications.enabled:
     https://agar.io: false
+    https://soloartesmarciales.com: false
     https://tetr.io: false
     https://webchat.freenode.net: false
     https://www.facebook.com: false
     https://www.reddit.com: false
+    https://www.youtube.com: false
   content.persistent_storage:
     https://mega.nz: false
   content.register_protocol_handler:

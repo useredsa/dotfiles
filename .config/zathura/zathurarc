@@ -5,7 +5,7 @@ set selection-clipboard clipboard
 # (La)tex synctex settings
 
 set synctex true
-set synctex-editor-command "kak-desktop +%{line} %{input}"
+set synctex-editor-command "kcr edit +%{line} %{input}"
 
 # Colorscheme
 
