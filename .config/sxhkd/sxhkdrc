@@ -306,12 +306,12 @@ Scroll_Lock: {minus,equal}
 
 # Focus last desktop
 super + {grave,dead_grave}
-	bspc desktop --focus; bspc desktop --focus last
+	bspc desktop --focus; bspc desktop --focus last.local
 
 # {Carry,Send} node to the last desktop
 super + {shift,alt} + {grave,dead_grave}
 	follow={--follow,--activate}; \
-	bspc node -d last $follow
+	bspc node -d last.local $follow
 
 # Focus the {next,previous} desktop
 super + bracket{left,right}

@@ -1,4 +1,6 @@
-provide-module latexrc %{
+hook global BufCreate .*\.(latex) %{
+    set-option buffer filetype latex
+}
 
 define-command maketex -override -docstring "Make LaTex" %{
     try %{
@@ -35,7 +37,3 @@ hook global WinSetOption filetype=(latex|tex) %{
     map global goto p '<esc>: goto-pdf<ret>' -docstring 'PDF'
     alias window ide texide
 }
-
-}
-
-require-module latexrc
