@@ -3,6 +3,8 @@
 !.vim/UltiSnips
 .config/kak/autoload/core
 .config/kak/autoload/plugins/*
+.config/kak/kakhist.txt
+.config/kak/mru_files.txt
 .config/kak/colors/*
 .config/qutebrowser/*
 !.config/qutebrowser/autoconfig.yml

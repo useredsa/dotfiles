@@ -51,7 +51,7 @@ plug-theme dracula "https://github.com/alexherbo2/kakoune-dracula-theme"
 
 plug-theme snow "https://github.com/caksoylar/kakoune-snow"
 
-plug pager "https://github.com/useredsa/pager.kak"
+plug-old pager "https://github.com/useredsa/pager.kak"
 
 plug terminal-mode "https://github.com/alexherbo2/terminal-mode.kak" %{
     map global user t ': enter-user-mode terminal<ret>' -docstring 'Terminal mode'
@@ -190,6 +190,13 @@ plug-old text-objects "https://github.com/Delapouite/kakoune-text-objects" %{
     unmap global object o
 
     map global object a 'u' -docstring 'argument'
+}
+
+plug mru-files "https://gitlab.com/kstr0k/mru-files.kak" %{
+    map global goto <a-a> '<esc>: mru-files<ret>' -docstring 'mru-files'
+    require-module kakhist
+    kakhist-init
+    map global goto ':' '<esc>: kakhist-buf-show<ret>' -docstring 'commands'
 }
 
 # Local kakrc ─────────────────────────────────────────────────────────────────
