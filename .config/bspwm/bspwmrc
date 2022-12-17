@@ -3,9 +3,11 @@
 SXHKD_SHELL=sh BSPWM_BORDER_WIDTH=1 sxhkd &
 picom &
 nitrogen --restore || nitrogen --set-scaled --random ~/Pictures/Wallpapers/ &
+(clipcatd --replace || clipcatd ) &
+aw-qt &
 setxkbmap us intl
 
-bspc monitor -d 1 2 3 4
+bspc monitor primary -d 1 2 3 4
 # Set desktop 2 as last desktop
 bspc desktop --focus 2
 bspc desktop --focus 1

@@ -1,26 +1,39 @@
 # Helper Functions ────────────────────────────────────────────────────────────
 
-define-command bam -params 4 -docstring %{
+define-command bam -params 4.. -docstring %{
     bam <scope> <key> <command> <insert_prefix>:
     BinAry Map in normal and insert mode.
     The given prefix is used before the command in insert mode.
 } %{
-    map "%arg{1}" normal "%arg{3}" "%arg{4}"
-    map "%arg{1}" insert "%arg{3}" "%arg{2}%arg{4}"
+    map "%arg{1}" normal "%arg{3}" %sh{
+        shift 3
+        while [ $# -gt 0 ]; do
+            printf "%s" "$1"
+            shift 1
+        done
+    }
+    map "%arg{1}" insert "%arg{3}" %sh{
+        prefix="$2"
+        shift 3
+        while [ $# -gt 0 ]; do
+            printf "%s%s" "$prefix" "$1"
+            shift 1
+        done
+    }
 }
 
 define-command home-expansion -hidden -docstring %{
     home-expansion: expand to the begining of
     line/non blank depending on position
 } %{
-    eval -itersel %{ # Run each selection independently so that the
-        try %{       # test does not just remove failing selections.
-            # Check that the preceeding characters are horizontal whitespaces.
-            exec -draft %{ <a-h><a-k>\A\h+.\z<ret> }
-            exec Gh # If the previous line does not fail, go to begining of line.
-        } catch %{  # Othwerwise, go to first non blank character
-            exec Gi
-        }
+    try %{
+        # Keep selections preceeded by whitespace.
+        exec -draft %{ '<a-h><a-k>\A\h+.\z<ret>' }
+        # If there are any selections left, go to the beginning of the line.
+        exec '<a-;>Gh'
+    } catch %{
+        # Othwerwise, go to the first non-blank.
+        exec '<a-;>Gi'
     }
 }
 
@@ -47,9 +60,8 @@ bam global '<a-;>' <c-s>    ': w<ret>'                    # <c-s> - Save file
 map global normal   '#'     ': comment-line<ret>'         # <#>   - Comment line(s)
 map global normal  '<a-#>'  ': comment-block<ret>'        # <a-#> - Comment block(s)
 bam global <esc>   <c-d>    ': select-or-add-cursor<ret>' # <c-d> - Auto select equal text
-map global normal  <home>   ': home-expansion<ret>;'
-map global insert  <home>   '<esc>: home-expansion<ret>;i'
-bam global <esc>   <s-home> ': home-expansion<ret>'
+bam global '<a-;>' <home>   ': home-expansion<ret>' ';'
+bam global '<a-;>' <s-home> ': home-expansion<ret>'
 map global normal    p      <a-p>                         # Switch p and <a-p>
 map global normal   <a-p>   p
 map global normal   <a-P>   P
@@ -69,6 +81,8 @@ map global normal f <a-a>
 map global normal F <a-i>
 map global normal e f
 map global normal E F
+map global normal <c-left>  <c-o>
+map global normal <c-right> <tab>
 
 hook global InsertCompletionShow .* %{ # <tab>/<s-tab> - Loop trhough completion selection
     map window insert <tab>   <c-n>
@@ -87,5 +101,6 @@ map global user e ': eval %val{selection}<ret>' -docstring 'Eval sel'
 map global user q ': db; q<ret>'                -docstring 'Quit'
 map global user r ': send-text<ret>'            -docstring 'To repl'
 map global user z <c-s>                         -docstring 'Save sels'
+map global user f ': format<ret>'               -docstring 'Format buffer'
 
 }

@@ -31,20 +31,27 @@ settings:
     global: white
   colors.webpage.preferred_color_scheme:
     global: dark
+  content.headers.user_agent:
+    global: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)
+      Chrome/97.0.4692.99 Safari/537.36
+  content.javascript.can_open_tabs_automatically:
+    global: true
+  content.media.audio_capture:
+    global: ask
   content.notifications.enabled:
-    https://agar.io: false
-    https://soloartesmarciales.com: false
-    https://tetr.io: false
-    https://webchat.freenode.net: false
     https://www.facebook.com: false
     https://www.reddit.com: false
     https://www.youtube.com: false
   content.persistent_storage:
     https://mega.nz: false
+  content.proxy:
+    global: system
   content.register_protocol_handler:
     https://mail.google.com?extsrc=mailto&url=%25s: false
   downloads.position:
     global: bottom
+  downloads.prevent_mixed_content:
+    global: true
   downloads.remove_finished:
     global: 60000
   editor.command:

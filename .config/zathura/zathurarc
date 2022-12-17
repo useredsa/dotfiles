@@ -6,6 +6,7 @@ set selection-clipboard clipboard
 
 set synctex true
 set synctex-editor-command "kcr edit +%{line} %{input}"
+set selection-clipboard clipboard
 
 # Colorscheme
 

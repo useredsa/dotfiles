@@ -24,18 +24,21 @@ if [ -n "$ALTPS1" ]; then
     PS1="$ALTPS1"
 fi
 # Prompt: Kakoune's connect plugin prompt + usual bash prompt
-PS1="\$(kcr prompt && printf %s '🐈')$PS1"
+PS1="\$(kcr prompt && printf :)$PS1"
 
 export EDITOR='kcr edit'
-export PAGER=kak-pager
+export PAGER=kak
 export MANPAGER=kak-man-pager
 export kak_session=default
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 export TTY="$(tty)"
+export GUROBI_HOME="/opt/gurobi1000/"
+export PATH="$GUROBI_HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$GUROBI_HOME/lib:$PATH"
 
 alias ls='ls --color=auto'
 alias la='ls -a'
-alias ll='ls -alF'
+alias ll='ls -alhF'
 alias mkdir='mkdir -pv'
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
@@ -44,16 +47,18 @@ alias du='dust'
 alias top='htop'
 alias tree="br -c :pt"
 alias cal="cal -m"
+alias docker="sudo docker"
 
-alias myg++="g++ -O2 -Wall -std=c++17"
+alias myg++="g++ -O2 -Wall -std=c++20"
 alias mylatex="pdflatex --output-dir out"
 alias ks="kak-shell"
 alias o="xdg-open 2>/dev/null"
 alias open="xdg-open 2>/dev/null"
 alias ss="setsid 2>/dev/null"
 alias fpdf="fd --no-ignore-vcs --extension pdf | fzf | xargs -0 -r setsid -f xdg-open"
-alias fimg="fd --no-ignore-vcs --e png -e jpg  | fzf | xargs -0 -r setsid -f xdg-open"
+alias fimg="fd --no-ignore-vcs -e png -e jpg  | fzf | xargs -0 -r setsid -f xdg-open"
 alias copy="xsel -ib"
+alias ampl="/home/useredsa/Documents/trabajo/huawei/linopt/ampl_linux-intel64/ampl"
 
 # Add a battery status command if upower is installed
 if which upower 2>/dev/null 1>&2 ; then
@@ -92,4 +97,9 @@ bind -m emacs-standard '"\eOS": " \C-b\C-k \C-u`open . < /dev/null > /dev/null 2
 [[ -f ~/.config/broot/launcher/bash/br ]] && source ~/.config/broot/launcher/bash/br
 [[ -f /usr/share/fzf/completion.bash ]] && source /usr/share/fzf/completion.bash
 [[ -f /usr/share/fzf/key-bindings.bash ]] && source /usr/share/fzf/key-bindings.bash
+[[ -f ${XDG_CONFIG_HOME:-$HOME/.config}/bash_completion ]] && source ${XDG_CONFIG_HOME:-$HOME/.config}/bash_completion
 
+
+# BEGIN_KITTY_SHELL_INTEGRATION
+if test -n "$KITTY_INSTALLATION_DIR" -a -e "$KITTY_INSTALLATION_DIR/shell-integration/bash/kitty.bash"; then source "$KITTY_INSTALLATION_DIR/shell-integration/bash/kitty.bash"; fi
+# END_KITTY_SHELL_INTEGRATION

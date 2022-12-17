@@ -19,18 +19,14 @@ define-command -docstring %{
     map window insert <a-h> η
     # map window insert <a-h>
     map window insert <a-i> ι
-    # map window insert <a-I>
-    # map window insert <a-j>
-    # map window insert <a-J>
+    map window insert <a-j> θ
     map window insert <a-k> κ
-    # map window insert <a-k>
+    map window insert <a-K> K
     map window insert <a-l> λ
     map window insert <a-L> Λ
     map window insert <a-m> μ
-    # map window insert <a-m>
     map window insert <a-n> ν
-    # map window insert <a-N>
-    map window insert <a-o> ω # repeated omega instead of omicron
+    map window insert <a-o> ω
     map window insert <a-O> Ω
     map window insert <a-p> π
     map window insert <a-P> Π
@@ -53,7 +49,6 @@ define-command -docstring %{
     # map window insert <a-y> 
     # map window insert <a-Y>
     map window insert <a-z> ζ
-    # map window insert <a-Z>
 }
 
 define-command -docstring %{

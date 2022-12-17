@@ -1,13 +1,13 @@
 {
   "template": [
     {
-      "alias": "cpp17",
-      "lang": "54",
+      "alias": "cpp20",
+      "lang": "73",
       "path": "/home/useredsa/Desktop/cpc/codes/template.cpp",
       "suffix": [
         "cpp"
       ],
-      "before_script": "g++ -Wall -O2 -std=c++17 $%full%$",
+      "before_script": "g++ -Wall -O2 -std=c++20 $%full%$",
       "script": "./a.out",
       "after_script": ""
     },

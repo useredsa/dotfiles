@@ -3,6 +3,8 @@ super + F5
 	pkill -USR1 -x sxhkd
 
 
+super + z
+	xdotool click 1 && notify-send works || notify-send fails
 
 ### Application Shortcuts
 ### ==========================
@@ -40,8 +42,8 @@ super + Tab
 # 	bspc wm -h on;
 
 super + {_,shift + }g
-	{_, bspc node --to-monitor ^2 --activate;} \
-	bspc desktop primary:focused --swap ^2:focused
+	{_, bspc node --to-monitor primary#next --activate;} \
+	bspc desktop focused:focused --swap focused#next:focused --follow
 
 # Open the file browser
 # super + m; e
@@ -64,13 +66,21 @@ super + {_,shift + }g
 super + m; t
 	bspc-toggle-visibility.sh TelegramDesktop telegram-desktop --state fullscreen
 
+# Slack
+super + m; w
+	bspc-toggle-visibility.sh Slack slack --state floating --unnamed-rule
+
 # Discord
 super + m; d
 	bspc-toggle-visibility.sh discord --state fullscreen
 
-# Spotify
+# # Spotify
+# super + m; s
+# 	bspc-toggle-visibility.sh spotify --state fullscreen --unnamed-rule
+
+# Signal
 super + m; s
-	bspc-toggle-visibility.sh spotify --state fullscreen --unnamed-rule
+	bspc-toggle-visibility.sh Signal signal-desktop --state fullscreen
 
 # Terminal
 super + space
@@ -324,12 +334,12 @@ super + {shift,alt} + bracket{left,right}
 
 # Focus the given desktop
 super + {1-8}
-	bspc desktop -f '^{1-8}'
+	bspc desktop -f '{1-8}'
 
 # {Carry,Send} node to the given desktop
 super + {shift,alt} + {1-8}
 	follow={--follow,--activate}; \
-	bspc node -d '^{1-8}' $follow
+	bspc node -d '{1-8}' $follow
 
 # Cycle Desktop's Tree
 super + {less,greater}
@@ -352,12 +362,12 @@ super + semicolon
 
 # Focus {third,primary,second} monitor
 super + {q,w,e}
-	bspc monitor {^3,primary,^2} --focus
+	bspc monitor {primary#next#next,primary,primary#next} --focus
 
 # {Carry,Send} node to {third,primary,second} monitor
 super + {shift,alt} + {q,w,e}
 	follow={--follow,--activate}; \
-	bspc node focused --to-monitor {^3,primary,^2} $follow
+	bspc node focused --to-monitor {primary#next#next,primary,primary#next} $follow
 
 
 
