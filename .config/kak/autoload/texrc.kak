@@ -1,6 +1,9 @@
-hook global BufCreate .*\.(latex) %{
-    set-option buffer filetype latex
-}
+provide-module latexrc %{
+
+declare-option str texmain 'main.tex'
+declare-option str texoutdir 'out'
+declare-option str texpdf 'out/main.pdf'
+declare-option str texcmd "texfot lualatex --synctex=1 --halt-on-error"
 
 hook global BufCreate .*\.(latex) %{ set-option buffer filetype latex }
 
@@ -57,3 +60,7 @@ hook global WinSetOption filetype=(latex|tex) %{
     set window indentwidth 2
     expandtab
 }
+
+}
+
+require-module latexrc
